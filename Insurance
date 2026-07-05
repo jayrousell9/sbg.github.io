@@ -1,1 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insurance Shoebox</title>
+
+  <!-- Google Analytics — replace G-FZESVFS8C0 with your real ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FZESVFS8C0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-FZESVFS8C0');
+
+    // GA funnel event helper
+    function trackEvent(eventName, params) {
+      if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, params || {});
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Tokens ───────────────────────────────────────────── */
+    :root {
+      --green:       #464F56;
+      --green-deep:  #2E3539;
+      --green-card:  #3A4248;
+      --green-hover: #3F474E;
+      --cream:       #EDE9E1;
+      --muted:       #D4CEBF;
+      --label:       #C2D0D6;
+      --divider:     #5A6370;
+      --pink:        #B5437A;
+      --hero-block:  #2E3539;
+      --font: 'Open Sans', system-ui, sans-serif;
+      --max-w: 680px;
+      --side: clamp(1.25rem, 5vw, 2rem);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--green);
+      color: var(--cream);
+      font-family: var(--font);
+      font-size: 1rem;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── Pages ────────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--green-deep);
+      padding: 0 var(--side);
+      border-bottom: 1px solid var(--divider);
+    }
+    .nav-inner {
+      max-width: calc(var(--max-w) + 4rem);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      gap: 1rem;
+    }
+    .nav-logo {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--cream);
+      cursor: pointer;
+      flex-shrink: 0;
+      letter-spacing: -0.01em;
+    }
+    .nav-logo .amp { color: var(--pink); }
+    .nav-links {
+      display: flex;
+      gap: clamp(0.75rem, 3vw, 1.75rem);
+      list-style: none;
+    }
+    .nav-links button {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-family: var(--font);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--label);
+      cursor: pointer;
+      padding: 0.25rem 0;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+    .nav-links button:hover  { color: var(--cream); }
+    .nav-links button.active { color: var(--cream); border-bottom-color: var(--cream); }
+    .nav-links button.login-btn {
+      background: var(--cream);
+      color: var(--green);
+      padding: 0.35rem 1rem;
+      font-weight: 700;
+    }
+    .nav-links button.login-btn:hover { background: var(--muted); color: var(--green-deep); }
+
+    /* ── Layout ───────────────────────────────────────────── */
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--side);
+    }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .hero-block {
+      background: var(--hero-block);
+      border-bottom: 4px solid var(--pink);
+      padding: clamp(4rem, 12vw, 8rem) var(--side);
+      text-align: center;
+    }
+    .hero-block .eyebrow {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--pink);
+      margin-bottom: 1rem;
+    }
+    .hero-block h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--cream);
+      margin-bottom: 1.25rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-block p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      font-weight: 300;
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: var(--pink);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 1rem 2.5rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-transform: uppercase;
+    }
+    .btn-primary:hover { background: #922E62; transform: translateY(-2px); }
+
+    /* ── Trust bar ────────────────────────────────────────── */
+    .trust-bar {
+      background: var(--green-card);
+      border-bottom: 1px solid var(--divider);
+      padding: 1.25rem var(--side);
+      text-align: center;
+    }
+    .trust-bar p {
+      font-size: 0.78rem;
+      color: var(--label);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ── Content sections ─────────────────────────────────── */
+    .content-section {
+      padding: 3.5rem var(--side);
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+    .section-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--label);
+      margin-bottom: 0.5rem;
+    }
+    .content-section h2 {
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 800;
+      color: var(--cream);
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .content-section p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Feature cards ────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--divider);
+      border: 1px solid var(--divider);
+      margin-top: 2rem;
+    }
+    .feature-card {
+      background: var(--green-card);
+      padding: 1.5rem;
+    }
+    .feature-card .icon { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .feature-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--cream); margin-bottom: 0.35rem; }
+    .feature-card p  { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── Quote form wrapper ───────────────────────────────── */
+    .quote-wrap {
+      min-height: calc(100vh - 64px);
+      padding: 3rem var(--side) 5rem;
+    }
+
+    /* ── Progress bar ─────────────────────────────────────── */
+    .progress-bar {
+      max-width: var(--max-w);
+      margin: 0 auto 2.5rem;
+    }
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .prog-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    .prog-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--divider);
+      z-index: 0;
+    }
+    .prog-step.done:not(:last-child)::after  { background: var(--cream); }
+    .prog-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--divider);
+      color: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+      transition: background 0.2s;
+    }
+    .prog-step.active .prog-dot { background: var(--cream); color: var(--green-deep); }
+    .prog-step.done .prog-dot   { background: var(--pink);  color: #fff; }
+    .prog-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--label);
+      margin-top: 0.4rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .prog-step.active .prog-label { color: var(--cream); }
+
+    /* ── Form card ────────────────────────────────────────── */
+    .form-card {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      background: var(--green-card);
+      border: 1px solid var(--divider);
+      padding: clamp(1.5rem, 5vw, 2.5rem);
+    }
+    .form-card h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+    .form-card .form-subtitle {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    /* ── Form fields ──────────────────────────────────────── */
+    .field-group { margin-bottom: 1.25rem; }
+    .field-group label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--label);
+      margin-bottom: 0.4rem;
+    }
+    .field-group input,
+    .field-group select {
+      width: 100%;
+      background: var(--green);
+      border: 1px solid var(--divider);
+      color: var(--cream);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .field-group input::placeholder { color: var(--label); opacity: 0.6; }
+    .field-group input:focus,
+    .field-group select:focus { border-color: var(--cream); }
+    .field-group select option { background: var(--green-deep); }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 480px) { .field-row { grid-template-columns: 1fr; } }
+
+    /* Address suggestions */
+    .address-wrap { position: relative; }
+    .address-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: var(--green-deep);
+      border: 1px solid var(--divider);
+      border-top: none;
+      z-index: 10;
+      display: none;
+    }
+    .address-suggestions.open { display: block; }
+    .suggestion-item {
+      padding: 0.65rem 1rem;
+      font-size: 0.875rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .suggestion-item:hover { background: var(--green-card); color: var(--cream); }
+
+    /* ── Form nav buttons ─────────────────────────────────── */
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      gap: 1rem;
+    }
+    .btn-back {
+      background: none;
+      border: 1px solid var(--divider);
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.7rem 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-back:hover { border-color: var(--cream); color: var(--cream); }
+    .btn-next {
+      background: var(--cream);
+      color: var(--green-deep);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.8rem 2rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-next:hover { background: var(--muted); transform: translateY(-1px); }
+
+    /* ── Quote options ────────────────────────────────────── */
+    .quote-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--divider);
+      border: 1px solid var(--divider);
+      margin: 1.5rem 0;
+    }
+    @media (max-width: 560px) {
+      .quote-options { grid-template-columns: 1fr; }
+    }
+    .quote-option {
+      background: var(--green-card);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      position: relative;
+    }
+    .quote-option.recommended {
+      background: var(--green-deep);
+      border: 2px solid var(--cream);
+    }
+    .recommended-badge {
+      position: absolute;
+      top: -1px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--cream);
+      color: var(--green-deep);
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.75rem;
+    }
+    .quote-option h3 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--label);
+      margin-bottom: 0.75rem;
+    }
+    .quote-option.recommended h3 { color: var(--muted); }
+    .quote-price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--cream);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    .quote-period {
+      font-size: 0.72rem;
+      color: var(--label);
+      margin-bottom: 1rem;
+    }
+    .quote-features {
+      list-style: none;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    .quote-features li {
+      font-size: 0.78rem;
+      color: var(--muted);
+      padding: 0.3rem 0;
+      border-bottom: 1px solid var(--divider);
+    }
+    .quote-features li::before { content: '✓  '; color: var(--cream); font-weight: 700; }
+    .btn-bind {
+      width: 100%;
+      background: var(--green);
+      color: var(--cream);
+      font-family: var(--font);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.75rem;
+      border: 1px solid var(--divider);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .quote-option.recommended .btn-bind {
+      background: var(--cream);
+      color: var(--green-deep);
+      border-color: var(--cream);
+    }
+    .btn-bind:hover { background: var(--muted); color: var(--green-deep); }
+
+    /* ── Payment ──────────────────────────────────────────── */
+    .disclosure-box {
+      background: var(--green);
+      border: 1px solid var(--divider);
+      padding: 1rem;
+      margin: 1.25rem 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: 18px; height: 18px;
+      accent-color: var(--cream);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .checkbox-row label {
+      font-size: 0.85rem;
+      color: var(--cream);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* ── Confirmation ─────────────────────────────────────── */
+    .confirm-wrap {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      text-align: center;
+      padding: 4rem var(--side);
+    }
+    .confirm-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .confirm-wrap h1 {
+      font-size: clamp(1.75rem, 5vw, 2.75rem);
+      font-weight: 800;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+    .confirm-wrap p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 440px;
+      margin: 0 auto 2rem;
+    }
+    .coverage-summary {
+      background: var(--green-card);
+      border: 1px solid var(--divider);
+      padding: 1.5rem;
+      text-align: left;
+      margin: 2rem auto;
+      max-width: 480px;
+    }
+    .coverage-summary h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--label);
+      margin-bottom: 1rem;
+    }
+    .coverage-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--divider);
+      font-size: 0.875rem;
+    }
+    .coverage-row:last-child { border-bottom: none; }
+    .coverage-row span:first-child { color: var(--muted); }
+    .coverage-row span:last-child  { color: var(--cream); font-weight: 600; }
+    .confirm-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .btn-selfserve {
+      background: var(--pink);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.9rem 2rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-selfserve:hover { background: #922E62; }
+    .btn-home-link {
+      background: none;
+      border: none;
+      color: var(--label);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .btn-home-link:hover { color: var(--cream); }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      background: var(--green-deep);
+      border-top: 1px solid var(--divider);
+      padding: 2rem var(--side);
+      text-align: center;
+    }
+    footer p {
+      font-size: 0.75rem;
+      color: var(--label);
+      letter-spacing: 0.04em;
+    }
+    footer .amp { color: var(--pink); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────── -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-logo" onclick="goHome()">
+        Insurance <span class="amp">&</span> Shoebox
+      </div>
+      <ul class="nav-links">
+        <li><button onclick="goHome()" id="nav-home" class="active">Home <span class="amp">&</span> Auto</button></li>
+        <li><button onclick="showPage('advice'); setNav('advice')" id="nav-advice">Advice</button></li>
+        <li><button class="login-btn" onclick="openSelfServe()">Login</button></li>
+      </ul>
+    </div>
+  </nav>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: Landing                                         -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="page active" id="page-landing">
+
+    <!-- Hero -->
+    <div class="hero-block">
+      <p class="eyebrow">Home &amp; Auto Insurance</p>
+      <h1>Your best rate.<br>In minutes.</h1>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Get covered today with a plan that fits your life.</p>
+      <button class="btn-primary" onclick="startQuote()">Get My Price →</button>
+    </div>
+
+    <!-- Trust bar -->
+    <div class="trust-bar">
+      <p>🔒 Secure &nbsp;·&nbsp; ⚡ Instant coverage &nbsp;·&nbsp; 🍁 Canadian-owned &nbsp;·&nbsp; ★★★★★ 4.8 rating</p>
+    </div>
+
+    <!-- Features -->
+    <div class="content-section">
+      <p class="section-title">Why Insurance Shoebox</p>
+      <h2>Simple. Fast. Honest.</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>Instant quotes</h3>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit ut labore.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔒</div>
+          <h3>Bank-level security</h3>
+          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📱</div>
+          <h3>Self-serve anytime</h3>
+          <p>Duis aute irure dolor in reprehenderit in voluptate velit esse.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🍁</div>
+          <h3>Made for Canadians</h3>
+          <p>Excepteur sint occaecat cupidatat non proident sunt in culpa.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second CTA -->
+    <div style="text-align:center; padding: 2rem var(--side) 4rem;">
+      <button class="btn-primary" onclick="startQuote()">Get My Price →</button>
+    </div>
+
+  </div><!-- /page-landing -->
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- QUOTE FLOW WRAPPER                                    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-quote">
+    <div class="quote-wrap">
+
+      <!-- Progress bar -->
+      <div class="progress-bar">
+        <div class="progress-steps">
+          <div class="prog-step active" id="prog-1">
+            <div class="prog-dot">1</div>
+            <div class="prog-label">You</div>
+          </div>
+          <div class="prog-step" id="prog-2">
+            <div class="prog-dot">2</div>
+            <div class="prog-label">Details</div>
+          </div>
+          <div class="prog-step" id="prog-3">
+            <div class="prog-dot">3</div>
+            <div class="prog-label">Your quote</div>
+          </div>
+          <div class="prog-step" id="prog-4">
+            <div class="prog-dot">4</div>
+            <div class="prog-label">Payment</div>
+          </div>
+          <div class="prog-step" id="prog-5">
+            <div class="prog-dot">✓</div>
+            <div class="prog-label">Done</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ── STEP 1: About You ─────────────────────────── -->
+      <div class="form-card" id="step-1">
+        <h2>About you</h2>
+        <p class="form-subtitle">Let's start with the basics. All information is kept secure.</p>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="first-name">First name</label>
+            <input type="text" id="first-name" placeholder="Jane" />
+          </div>
+          <div class="field-group">
+            <label for="last-name">Last name</label>
+            <input type="text" id="last-name" placeholder="Smith" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="address">Home address</label>
+          <div class="address-wrap">
+            <input type="text" id="address" placeholder="Start typing your address…" autocomplete="off" oninput="handleAddress(this.value)" />
+            <div class="address-suggestions" id="address-suggestions">
+              <div class="suggestion-item" onclick="selectAddress('123 Main St, Toronto, ON M5V 1A1')">123 Main St, Toronto, ON M5V 1A1</div>
+              <div class="suggestion-item" onclick="selectAddress('456 Queen St W, Toronto, ON M5V 2A9')">456 Queen St W, Toronto, ON M5V 2A9</div>
+              <div class="suggestion-item" onclick="selectAddress('789 King St E, Hamilton, ON L8N 1B1')">789 King St E, Hamilton, ON L8N 1B1</div>
+              <div class="suggestion-item" onclick="selectAddress('321 Rideau St, Ottawa, ON K1N 5Y3')">321 Rideau St, Ottawa, ON K1N 5Y3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="car-make">Car make</label>
+            <select id="car-make">
+              <option value="" disabled selected>Select make</option>
+              <option>Toyota</option><option>Honda</option><option>Ford</option>
+              <option>Chevrolet</option><option>Hyundai</option><option>Kia</option>
+              <option>Mazda</option><option>Subaru</option><option>Volkswagen</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="car-model">Car model</label>
+            <input type="text" id="car-model" placeholder="e.g. Camry" />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="car-year">Year</label>
+            <input type="number" id="car-year" placeholder="e.g. 2019" min="1990" max="2026" />
+          </div>
+          <div class="field-group">
+            <label for="drivers-license">Driver's licence #</label>
+            <input type="text" id="drivers-license" placeholder="e.g. S1234-56789-00000" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-back" onclick="goHome()">← Back to home</button>
+          <button class="btn-next" onclick="goStep(2)">Next: About me →</button>
+        </div>
+      </div><!-- /step-1 -->
+
+
+      <!-- ── STEP 2: Driving Details ───────────────────── -->
+      <div class="form-card" id="step-2" style="display:none;">
+        <h2>A little more about you</h2>
+        <p class="form-subtitle">These details help us find your most accurate rate.</p>
+
+        <div class="field-group">
+          <label for="tickets">Tickets in the last 5 years</label>
+          <select id="tickets">
+            <option value="" disabled selected>Select</option>
+            <option value="0">0 — None</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3+">3 or more</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="convictions">Any criminal convictions?</label>
+          <select id="convictions">
+            <option value="" disabled selected>Select</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="km-per-year">Kilometres driven per year</label>
+          <select id="km-per-year">
+            <option value="" disabled selected>Select</option>
+            <option value="under10">Under 10,000 km</option>
+            <option value="10-15">10,000 – 15,000 km</option>
+            <option value="15-20">15,000 – 20,000 km</option>
+            <option value="20-25">20,000 – 25,000 km</option>
+            <option value="over25">Over 25,000 km</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="winter-tires">Winter tires installed?</label>
+          <select id="winter-tires">
+            <option value="" disabled selected>Select</option>
+            <option value="yes">Yes — installed seasonally</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="years-insured">Years continuously insured</label>
+          <select id="years-insured">
+            <option value="" disabled selected>Select</option>
+            <option value="0">Less than 1 year</option>
+            <option value="1-3">1 – 3 years</option>
+            <option value="3-6">3 – 6 years</option>
+            <option value="6+">6 or more years</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-back" onclick="goStep(1)">← Previous</button>
+          <button class="btn-next" onclick="goStep(3)">See my quote →</button>
+        </div>
+      </div><!-- /step-2 -->
+
+
+      <!-- ── STEP 3: Your Quote ────────────────────────── -->
+      <div class="form-card" id="step-3" style="display:none;">
+        <h2>Your quote</h2>
+        <p class="form-subtitle">We found 3 options for you. The middle plan is our most popular.</p>
+
+        <div class="quote-options">
+
+          <div class="quote-option">
+            <h3>Option A</h3>
+            <div class="quote-price">$89</div>
+            <div class="quote-period">/ month</div>
+            <ul class="quote-features">
+              <li>Lorem ipsum dolor</li>
+              <li>Consectetur adipiscing</li>
+              <li>Sed do eiusmod</li>
+              <li>Ut labore et dolore</li>
+            </ul>
+            <button class="btn-bind" onclick="selectPlan('Option A', '$89/mo')">Buy now</button>
+          </div>
+
+          <div class="quote-option recommended">
+            <div class="recommended-badge">Recommended</div>
+            <h3>Option B</h3>
+            <div class="quote-price">$124</div>
+            <div class="quote-period">/ month</div>
+            <ul class="quote-features">
+              <li>Lorem ipsum dolor</li>
+              <li>Consectetur adipiscing</li>
+              <li>Sed do eiusmod tempor</li>
+              <li>Ut labore et dolore</li>
+              <li>Magna aliqua enim</li>
+            </ul>
+            <button class="btn-bind" onclick="selectPlan('Option B', '$124/mo')">Buy now</button>
+          </div>
+
+          <div class="quote-option">
+            <h3>Option C</h3>
+            <div class="quote-price">$168</div>
+            <div class="quote-period">/ month</div>
+            <ul class="quote-features">
+              <li>Lorem ipsum dolor</li>
+              <li>Consectetur adipiscing</li>
+              <li>Sed do eiusmod tempor</li>
+              <li>Ut labore et dolore</li>
+              <li>Magna aliqua enim</li>
+              <li>Quis nostrud exercit</li>
+            </ul>
+            <button class="btn-bind" onclick="selectPlan('Option C', '$168/mo')">Buy now</button>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-back" onclick="goStep(2)">← Previous</button>
+        </div>
+      </div><!-- /step-3 -->
+
+
+      <!-- ── STEP 4: Payment ───────────────────────────── -->
+      <div class="form-card" id="step-4" style="display:none;">
+        <h2>Payment details</h2>
+        <p class="form-subtitle">Your banking information is encrypted and never stored.</p>
+
+        <div class="field-group">
+          <label for="bank-id">Bank / institution number</label>
+          <input type="text" id="bank-id" placeholder="e.g. 001" maxlength="3" />
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="transit">Transit number</label>
+            <input type="text" id="transit" placeholder="e.g. 12345" maxlength="5" />
+          </div>
+          <div class="field-group">
+            <label for="account">Account number</label>
+            <input type="text" id="account" placeholder="e.g. 1234567" maxlength="12" />
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:1.5rem;">
+          <label>Disclosure</label>
+          <div class="disclosure-box">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="agree" />
+            <label for="agree">I agree to the terms and conditions above</label>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-back" onclick="goStep(3)">← Previous</button>
+          <button class="btn-next" onclick="confirmPurchase()">Confirm my purchase →</button>
+        </div>
+      </div><!-- /step-4 -->
+
+    </div>
+  </div><!-- /page-quote -->
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: Confirmation                                    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-confirm">
+    <div class="confirm-wrap">
+      <div class="confirm-icon">🎉</div>
+      <h1>You're instantly covered.</h1>
+      <p>Congratulations! Your policy is active right now. You'll receive a welcome email shortly with your policy documents.</p>
+
+      <div class="coverage-summary">
+        <h3>Your coverage summary</h3>
+        <div class="coverage-row">
+          <span>Plan</span>
+          <span id="confirm-plan">Standard — $124/mo</span>
+        </div>
+        <div class="coverage-row">
+          <span>Liability coverage</span>
+          <span>$2,000,000</span>
+        </div>
+        <div class="coverage-row">
+          <span>Collision deductible</span>
+          <span>$500</span>
+        </div>
+        <div class="coverage-row">
+          <span>Comprehensive</span>
+          <span>Included</span>
+        </div>
+        <div class="coverage-row">
+          <span>Policy effective</span>
+          <span id="confirm-date">Today</span>
+        </div>
+      </div>
+
+      <div class="confirm-actions">
+        <button class="btn-selfserve" onclick="trackEvent('selfserve_click', {page: 'confirmation'}); openSelfServe();">
+          Click here to start my self-serve account →
+        </button>
+        <button class="btn-home-link" onclick="goHome()">← Return to home</button>
+      </div>
+    </div>
+  </div><!-- /page-confirm -->
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: Advice                                          -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-advice">
+    <div style="max-width:var(--max-w); margin:0 auto; padding: 3.5rem var(--side);">
+
+      <p class="section-title">Advice &amp; Resources</p>
+
+      <!-- Podcast section -->
+      <div style="margin-bottom:3rem;">
+        <p class="section-title" style="font-size:0.68rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--label); margin-bottom:0.5rem;">The Podcast</p>
+        <h2 style="font-size:1.5rem; font-weight:800; color:var(--cream); letter-spacing:-0.02em; margin-bottom:0.35rem;">Insurance Shoebox 🎙️</h2>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:2rem;">Plain talk on home and auto — no jargon, no sales pitch. New episodes every two weeks.</p>
+
+        <div style="display:flex; flex-direction:column; gap:1px; background:var(--divider); border:1px solid var(--divider);">
+
+          <div style="background:var(--green-card); padding:1.5rem; display:grid; grid-template-columns:auto 1fr; gap:1.25rem; align-items:center;">
+            <div style="width:48px; height:48px; background:var(--pink); display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;">▶</div>
+            <div>
+              <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--label); margin-bottom:0.25rem;">Episode 12 · 28 min</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--cream); margin-bottom:0.2rem;">Lorem ipsum: the truth about bundling your policies</div>
+              <div style="font-size:0.8rem; color:var(--muted);">Consectetur adipiscing elit, sed do eiusmod tempor incididunt.</div>
+            </div>
+          </div>
+
+          <div style="background:var(--green-card); padding:1.5rem; display:grid; grid-template-columns:auto 1fr; gap:1.25rem; align-items:center;">
+            <div style="width:48px; height:48px; background:var(--green); border:1px solid var(--divider); display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;">▶</div>
+            <div>
+              <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--label); margin-bottom:0.25rem;">Episode 11 · 22 min</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--cream); margin-bottom:0.2rem;">Sed do eiusmod: what happens when you make a claim?</div>
+              <div style="font-size:0.8rem; color:var(--muted);">Ut enim ad minim veniam, quis nostrud exercitation ullamco.</div>
+            </div>
+          </div>
+
+          <div style="background:var(--green-card); padding:1.5rem; display:grid; grid-template-columns:auto 1fr; gap:1.25rem; align-items:center;">
+            <div style="width:48px; height:48px; background:var(--green); border:1px solid var(--divider); display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0;">▶</div>
+            <div>
+              <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--label); margin-bottom:0.25rem;">Episode 10 · 31 min</div>
+              <div style="font-size:0.95rem; font-weight:700; color:var(--cream); margin-bottom:0.2rem;">Ut labore: is your home actually underinsured?</div>
+              <div style="font-size:0.8rem; color:var(--muted);">Duis aute irure dolor in reprehenderit in voluptate velit esse.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+          <button style="background:none; border:1px solid var(--divider); color:var(--muted); font-family:var(--font); font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:0.6rem 1.25rem; cursor:pointer;">🎵 Apple Podcasts</button>
+          <button style="background:none; border:1px solid var(--divider); color:var(--muted); font-family:var(--font); font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:0.6rem 1.25rem; cursor:pointer;">🟢 Spotify</button>
+          <button style="background:none; border:1px solid var(--divider); color:var(--muted); font-family:var(--font); font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:0.6rem 1.25rem; cursor:pointer;">📻 All episodes</button>
+        </div>
+      </div>
+
+      <!-- Article cards -->
+      <div style="border-top:1px solid var(--divider); padding-top:2.5rem; margin-bottom:0;">
+      <h2 style="font-size:clamp(1.4rem,4vw,2rem); font-weight:800; color:var(--cream); letter-spacing:-0.02em; margin-bottom:0.5rem;">Latest articles</h2>
+      <p style="color:var(--muted); font-size:0.9rem; margin-bottom:2.5rem;">Practical tips on home, auto, and everything in between.</p>
+      <div style="display:flex; flex-direction:column; gap:1px; background:var(--divider); border:1px solid var(--divider); margin-bottom:3rem;">
+
+        <div class="advice-card" onclick="showArticle(1)" style="background:var(--green-card); padding:1.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green-card)'">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.4rem;">Auto Insurance</div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--cream); margin-bottom:0.4rem;">Lorem ipsum: why your deductible matters more than your rate</h3>
+          <p style="font-size:0.875rem; color:var(--muted); margin-bottom:0.75rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+          <div style="font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label);">5 min read · Auto</div>
+        </div>
+
+        <div class="advice-card" onclick="showArticle(2)" style="background:var(--green-card); padding:1.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green-card)'">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.4rem;">Home Insurance</div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--cream); margin-bottom:0.4rem;">Consectetur adipiscing: what every homeowner needs to know before winter</h3>
+          <p style="font-size:0.875rem; color:var(--muted); margin-bottom:0.75rem;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          <div style="font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label);">4 min read · Home</div>
+        </div>
+
+        <div class="advice-card" onclick="showArticle(3)" style="background:var(--green-card); padding:1.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green-card)'">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.4rem;">Auto Insurance</div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--cream); margin-bottom:0.4rem;">Sed do eiusmod: how bundling home and auto saves you more than you think</h3>
+          <p style="font-size:0.875rem; color:var(--muted); margin-bottom:0.75rem;">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+          <div style="font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label);">3 min read · Auto & Home</div>
+        </div>
+
+        <div class="advice-card" onclick="showArticle(4)" style="background:var(--green-card); padding:1.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green-card)'">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.4rem;">Life & Wellness</div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--cream); margin-bottom:0.4rem;">Ut labore et dolore: the five questions to ask before renewing</h3>
+          <p style="font-size:0.875rem; color:var(--muted); margin-bottom:0.75rem;">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+          <div style="font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label);">6 min read · Tips</div>
+        </div>
+
+        <div class="advice-card" onclick="showArticle(5)" style="background:var(--green-card); padding:1.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green-card)'">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.4rem;">Home Insurance</div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--cream); margin-bottom:0.4rem;">Magna aliqua enim: understanding replacement cost vs. actual cash value</h3>
+          <p style="font-size:0.875rem; color:var(--muted); margin-bottom:0.75rem;">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit sed quia consequuntur.</p>
+          <div style="font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label);">4 min read · Home</div>
+        </div>
+
+        <div class="advice-card" onclick="showArticle(6)" style="background:var(--green-card); padding:1.75rem; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green-card)'">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.4rem;">Auto Insurance</div>
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--cream); margin-bottom:0.4rem;">Quis nostrud: winter tires and your insurance rate — what's the connection?</h3>
+          <p style="font-size:0.875rem; color:var(--muted); margin-bottom:0.75rem;">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium totam.</p>
+          <div style="font-size:0.68rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label);">3 min read · Auto</div>
+        </div>
+
+      </div>
+      </div>
+
+
+      <div style="margin-top:2.5rem;">
+        <button class="btn-back" onclick="goHome()">← Back to home</button>
+      </div>
+
+    </div>
+  </div><!-- /page-advice -->
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PAGE: Article (shared template, content swaps via JS) -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="page" id="page-article">
+    <div style="max-width:var(--max-w); margin:0 auto; padding: 3.5rem var(--side);">
+      <button class="btn-back" onclick="showPage('advice'); setNav('advice')" style="margin-bottom:2rem;">← Back to advice</button>
+      <div id="article-tag" style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--label); margin-bottom:0.5rem;"></div>
+      <h1 id="article-title" style="font-size:clamp(1.6rem,5vw,2.5rem); font-weight:800; color:var(--cream); letter-spacing:-0.02em; line-height:1.15; margin-bottom:1rem;"></h1>
+      <div id="article-meta" style="font-size:0.72rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--label); margin-bottom:2.5rem; padding-bottom:1.5rem; border-bottom:1px solid var(--divider);"></div>
+      <div id="article-body" style="font-size:0.95rem; color:var(--muted); line-height:1.85;"></div>
+      <div style="margin-top:3rem; padding-top:2rem; border-top:1px solid var(--divider); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <button class="btn-back" onclick="showPage('advice'); setNav('advice')">← Back to advice</button>
+        <button class="btn-next" onclick="startQuote()">Get my quote →</button>
+      </div>
+    </div>
+  </div><!-- /page-article -->
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- MODAL: Self-serve signup                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="selfserve-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:200; overflow-y:auto;">
+    <div style="max-width:480px; margin:3rem auto; background:var(--green-card); border:1px solid var(--divider); padding:2rem var(--side);">
+
+      <!-- Not confirmed state -->
+      <div id="selfserve-form-state">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+          <h2 style="font-size:1.35rem; font-weight:800; color:var(--cream); letter-spacing:-0.02em;">Set up self-serve</h2>
+          <button onclick="closeSelfServe()" style="background:none; border:none; color:var(--label); font-size:1.5rem; cursor:pointer; line-height:1;">✕</button>
+        </div>
+        <p style="color:var(--muted); font-size:0.875rem; margin-bottom:2rem;">Create your account to access your policy, download your pink card, and manage your coverage anytime.</p>
+
+        <div class="field-group">
+          <label>Full name</label>
+          <input type="text" placeholder="Jane Smith" />
+        </div>
+        <div class="field-group">
+          <label>Email address</label>
+          <input type="email" placeholder="jane@email.com" />
+        </div>
+        <div class="field-group">
+          <label>Policy number</label>
+          <input type="text" placeholder="e.g. POL-2026-00123" />
+        </div>
+        <div class="field-group">
+          <label>Create a password</label>
+          <input type="password" placeholder="Minimum 8 characters" />
+        </div>
+        <div class="field-group">
+          <label>Confirm password</label>
+          <input type="password" placeholder="Repeat password" />
+        </div>
+
+        <button class="btn-next" style="width:100%; margin-top:0.5rem;" onclick="confirmSelfServe()">Create my account →</button>
+        <button onclick="closeSelfServe()" style="width:100%; margin-top:0.75rem; background:none; border:none; color:var(--label); font-family:var(--font); font-size:0.78rem; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer;">Cancel</button>
+      </div>
+
+      <!-- Confirmed state -->
+      <div id="selfserve-confirm-state" style="display:none; text-align:center; padding:2rem 0;">
+        <div style="font-size:3rem; margin-bottom:1rem;">✅</div>
+        <h2 style="font-size:1.35rem; font-weight:800; color:var(--cream); margin-bottom:0.75rem;">You're all set!</h2>
+        <p style="color:var(--muted); font-size:0.9rem; margin-bottom:2rem;">Your self-serve account has been created. Check your email for a confirmation link.</p>
+        <button class="btn-next" onclick="closeSelfServe()">Close →</button>
+      </div>
+
+    </div>
+  </div><!-- /selfserve-overlay -->
+
+  <!-- ── Footer ─────────────────────────────────────────── -->
+  <footer>
+    <p>© 2026 Insurance <span class="amp">&</span> Shoebox · This is a demo site · Not a licensed insurer</p>
+  </footer>
+
+
+  <!-- ── Scripts ────────────────────────────────────────── -->
+  <script>
+    let selectedPlan = 'Standard — $124/mo';
+
+    // ── Page routing ─────────────────────────────────────
+    function showPage(name) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + name).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goHome() {
+      showPage('landing');
+      setNav('home');
+      trackEvent('page_view', { page_title: 'landing' });
+    }
+
+    function setNav(key) {
+      document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById('nav-' + key);
+      if (btn) btn.classList.add('active');
+    }
+
+    // ── Article data ──────────────────────────────────────
+    const articles = {
+      1: {
+        tag: 'Auto Insurance',
+        title: 'Lorem ipsum: why your deductible matters more than your rate',
+        meta: '5 min read · Auto Insurance · June 2026',
+        body: `<p style="margin-bottom:1.25rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p><p style="margin-bottom:1.25rem;">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p style="margin-bottom:1.25rem;">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p><p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt neque porro quisquam.</p>`
+      },
+      2: {
+        tag: 'Home Insurance',
+        title: 'Consectetur adipiscing: what every homeowner needs to know before winter',
+        meta: '4 min read · Home Insurance · May 2026',
+        body: `<p style="margin-bottom:1.25rem;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.</p><p style="margin-bottom:1.25rem;">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud.</p>`
+      },
+      3: {
+        tag: 'Auto & Home',
+        title: 'Sed do eiusmod: how bundling home and auto saves you more than you think',
+        meta: '3 min read · Auto & Home · May 2026',
+        body: `<p style="margin-bottom:1.25rem;">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia.</p><p style="margin-bottom:1.25rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation.</p><p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>`
+      },
+      4: {
+        tag: 'Tips',
+        title: 'Ut labore et dolore: the five questions to ask before renewing',
+        meta: '6 min read · Tips · April 2026',
+        body: `<p style="margin-bottom:1.25rem;">Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem.</p><p style="margin-bottom:1.25rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco.</p><p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident.</p>`
+      },
+      5: {
+        tag: 'Home Insurance',
+        title: 'Magna aliqua enim: understanding replacement cost vs. actual cash value',
+        meta: '4 min read · Home Insurance · April 2026',
+        body: `<p style="margin-bottom:1.25rem;">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt neque porro.</p><p style="margin-bottom:1.25rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam.</p><p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident sunt in culpa.</p>`
+      },
+      6: {
+        tag: 'Auto Insurance',
+        title: 'Quis nostrud: winter tires and your insurance rate — what\'s the connection?',
+        meta: '3 min read · Auto Insurance · March 2026',
+        body: `<p style="margin-bottom:1.25rem;">Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis.</p><p style="margin-bottom:1.25rem;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation.</p><p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum sed ut perspiciatis unde omnis iste natus.</p>`
+      }
+    };
+
+    function showArticle(id) {
+      const a = articles[id];
+      if (!a) return;
+      document.getElementById('article-tag').textContent = a.tag;
+      document.getElementById('article-title').textContent = a.title;
+      document.getElementById('article-meta').textContent = a.meta;
+      document.getElementById('article-body').innerHTML = a.body;
+      showPage('article');
+      trackEvent('article_view', { article_id: id, article_title: a.title });
+    }
+
+    // ── Self-serve modal ──────────────────────────────────
+    function openSelfServe() {
+      document.getElementById('selfserve-overlay').style.display = 'block';
+      document.getElementById('selfserve-form-state').style.display = 'block';
+      document.getElementById('selfserve-confirm-state').style.display = 'none';
+      document.body.style.overflow = 'hidden';
+      trackEvent('selfserve_open');
+    }
+    function closeSelfServe() {
+      document.getElementById('selfserve-overlay').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    function confirmSelfServe() {
+      document.getElementById('selfserve-form-state').style.display = 'none';
+      document.getElementById('selfserve-confirm-state').style.display = 'block';
+      trackEvent('selfserve_signup_complete');
+    }
+    // Close modal on overlay click
+    document.getElementById('selfserve-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeSelfServe();
+    });
+
+    // ── Quote flow ────────────────────────────────────────
+    function startQuote() {
+      showPage('quote');
+      showStep(1);
+      trackEvent('quote_start', { funnel_step: 'start' });
+    }
+
+    function showStep(n) {
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById('step-' + i);
+        if (el) el.style.display = (i === n) ? 'block' : 'none';
+      }
+      updateProgress(n);
+    }
+
+    function goStep(n) {
+      const stepNames = {
+        1: 'about_you',
+        2: 'driving_details',
+        3: 'your_quote',
+        4: 'payment'
+      };
+      showStep(n);
+      trackEvent('funnel_step_' + n, {
+        funnel_step: stepNames[n] || n,
+        step_number: n
+      });
+    }
+
+    function selectPlan(name, price) {
+      selectedPlan = name + ' — ' + price;
+      trackEvent('plan_selected', { plan_name: name, plan_price: price });
+      goStep(4);
+    }
+
+    function confirmPurchase() {
+      const agreed = document.getElementById('agree').checked;
+      if (!agreed) {
+        alert('Please agree to the terms and conditions to continue.');
+        return;
+      }
+      document.getElementById('confirm-plan').textContent = selectedPlan;
+      const today = new Date().toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('confirm-date').textContent = today;
+      trackEvent('purchase_complete', { funnel_step: 'confirmation', plan: selectedPlan });
+      showPage('confirm');
+    }
+
+    // ── Progress bar ──────────────────────────────────────
+    function updateProgress(activeStep) {
+      for (let i = 1; i <= 5; i++) {
+        const el = document.getElementById('prog-' + i);
+        if (!el) continue;
+        el.classList.remove('active', 'done');
+        if (i < activeStep)  el.classList.add('done');
+        if (i === activeStep) el.classList.add('active');
+      }
+    }
+
+    // ── Address suggestions ───────────────────────────────
+    function handleAddress(val) {
+      const box = document.getElementById('address-suggestions');
+      box.classList.toggle('open', val.length > 2);
+    }
+    function selectAddress(addr) {
+      document.getElementById('address').value = addr;
+      document.getElementById('address-suggestions').classList.remove('open');
+    }
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.address-wrap')) {
+        document.getElementById('address-suggestions').classList.remove('open');
+      }
+    });
+  </script>
+
+</body>
+</html>
 

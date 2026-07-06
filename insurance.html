@@ -515,10 +515,37 @@
       margin-top: 1rem;
     }
     .checkbox-row input[type="checkbox"] {
-      width: 18px; height: 18px;
-      accent-color: var(--cream);
-      cursor: pointer;
+      display: none;
+    }
+    .checkbox-custom {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--divider);
+      background: var(--green);
       flex-shrink: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .checkbox-custom.checked {
+      background: var(--pink);
+      border-color: var(--pink);
+    }
+    .checkbox-custom.checked::after {
+      content: '✓';
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .checkbox-custom.required-flash {
+      border-color: var(--pink);
+      animation: flash 0.4s ease 2;
+    }
+    @keyframes flash {
+      0%, 100% { border-color: var(--pink); }
+      50%       { border-color: var(--cream); }
     }
     .checkbox-row label {
       font-size: 0.85rem;
@@ -654,7 +681,7 @@
     <div class="hero-block">
       <p class="eyebrow">Home &amp; Auto Insurance</p>
       <h1>You are an<br>insurance hero.</h1>
-      <p>Be the hero in your group chat today.</p>
+      <p>Be the hero in your group chat with the best insurance experience.</p>
       <button class="btn-primary" onclick="startQuote()">Get My Price →</button>
     </div>
 
@@ -942,7 +969,8 @@
           </div>
           <div class="checkbox-row">
             <input type="checkbox" id="agree" />
-            <label for="agree">I agree to the terms and conditions above</label>
+            <div class="checkbox-custom" id="agree-box" onclick="toggleAgree()"></div>
+            <label onclick="toggleAgree()">I agree to the terms and conditions above</label>
           </div>
         </div>
 
@@ -1316,10 +1344,21 @@
       goStep(4);
     }
 
+    function toggleAgree() {
+      const cb = document.getElementById('agree');
+      const box = document.getElementById('agree-box');
+      cb.checked = !cb.checked;
+      box.classList.toggle('checked', cb.checked);
+      box.classList.remove('required-flash');
+    }
+
     function confirmPurchase() {
       const agreed = document.getElementById('agree').checked;
       if (!agreed) {
-        alert('Please agree to the terms and conditions to continue.');
+        const box = document.getElementById('agree-box');
+        box.classList.remove('required-flash');
+        void box.offsetWidth; // force reflow to restart animation
+        box.classList.add('required-flash');
         return;
       }
       document.getElementById('confirm-plan').textContent = selectedPlan;

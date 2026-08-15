@@ -420,6 +420,41 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script>
   // ---------------- tee data ----------------
+  // ---------------- storage abstraction ----------------
+  // window.storage only exists inside Claude's own artifact viewer. If this file is
+  // opened standalone (downloaded, saved to home screen, opened in Safari/Chrome directly —
+  // exactly how you'd actually use this on the course), window.storage is undefined and
+  // every get/set call fails silently. This falls back to the browser's own localStorage
+  // in that case, so saving actually works wherever the file is opened.
+  const storageAPI = (function(){
+    const hasNative = (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function');
+    if(hasNative) return window.storage;
+    const PREFIX = 'woodenSticksCaddie:';
+    return {
+      async get(key){
+        const raw = window.localStorage.getItem(PREFIX + key);
+        if(raw === null) throw new Error('not found');
+        return { key, value: raw };
+      },
+      async set(key, value){
+        window.localStorage.setItem(PREFIX + key, value);
+        return { key, value };
+      },
+      async delete(key){
+        window.localStorage.removeItem(PREFIX + key);
+        return { key, deleted:true };
+      },
+      async list(prefix){
+        const full = PREFIX + (prefix||'');
+        const keys = Object.keys(window.localStorage).filter(k=>k.startsWith(full)).map(k=>k.slice(PREFIX.length));
+        return { keys };
+      }
+    };
+  })();
+  if(typeof window.storage === 'undefined'){
+    console.warn('Wooden Sticks Caddie Book: window.storage not found — using localStorage fallback so your data still saves on this device.');
+  }
+
   const TEES = [
     { key:'oak',    name:'Oak',    label:'Black',  color:'#1a1a1a', yards:{1:451} },
     { key:'maple',  name:'Maple',  label:'Green',  color:'#2F6B3A', yards:{1:442} },
@@ -509,7 +544,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     refreshShotPlan(false);
 
-    try{ window.storage.set('app:selectedTee', selectedTee); }catch(e){}
+    try{ storageAPI.set('app:selectedTee', selectedTee); }catch(e){}
   }
 
   document.getElementById('lzSlider').addEventListener('input', (e) => {
@@ -517,7 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     recomputeStripFromLZ();
   });
   document.getElementById('lzSlider').addEventListener('change', async () => {
-    try{ await window.storage.set('hole1:lzOverride', String(lzOverride)); }catch(err){}
+    try{ await storageAPI.set('hole1:lzOverride', String(lzOverride)); }catch(err){}
   });
 
   // ---------------- collapsible cards ----------------
@@ -541,7 +576,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const collapsed = card.classList.toggle('collapsed');
         toggle.textContent = collapsed ? 'Show' : 'Hide';
         collapsedState[key] = collapsed;
-        try{ await window.storage.set('ui:collapsed', JSON.stringify(collapsedState)); }catch(e){}
+        try{ await storageAPI.set('ui:collapsed', JSON.stringify(collapsedState)); }catch(e){}
       });
     });
   }
@@ -581,7 +616,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
   async function loadClubs(){
     try{
-      const res = await window.storage.get('clubs:bag');
+      const res = await storageAPI.get('clubs:bag');
       if(res && res.value) clubBag = JSON.parse(res.value);
     }catch(e){ clubBag = {}; }
   }
@@ -593,10 +628,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(v && v>0) newBag[inp.dataset.club] = v;
     });
     clubBag = newBag;
-    try{ await window.storage.set('clubs:bag', JSON.stringify(clubBag)); }catch(e){}
+    try{ await storageAPI.set('clubs:bag', JSON.stringify(clubBag)); }catch(e){}
     // verify the write actually landed before anything reads it
     try{
-      const check = await window.storage.get('clubs:bag');
+      const check = await storageAPI.get('clubs:bag');
       if(check && check.value) clubBag = JSON.parse(check.value);
     }catch(e){}
   }
@@ -655,21 +690,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     golfMap.on('click', async (e) => {
       if(placeMode === 'pin'){
         if(pinMarker) pinMarker.setLatLng(e.latlng); else pinMarker = L.marker(e.latlng, {icon:pinIcon}).addTo(golfMap);
-        try{ await window.storage.set('hole1:pin', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+        try{ await storageAPI.set('hole1:pin', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       } else {
         if(targetMarker) targetMarker.setLatLng(e.latlng); else targetMarker = L.marker(e.latlng, {icon:targetIcon}).addTo(golfMap);
-        try{ await window.storage.set('hole1:target', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+        try{ await storageAPI.set('hole1:target', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       }
       recalcLiveStats();
     });
 
     (async () => {
       try{
-        const p = await window.storage.get('hole1:pin');
+        const p = await storageAPI.get('hole1:pin');
         if(p && p.value){ const c = JSON.parse(p.value); pinMarker = L.marker([c.lat,c.lon], {icon:pinIcon}).addTo(golfMap); }
       }catch(e){}
       try{
-        const t = await window.storage.get('hole1:target');
+        const t = await storageAPI.get('hole1:target');
         if(t && t.value){ const c = JSON.parse(t.value); targetMarker = L.marker([c.lat,c.lon], {icon:targetIcon}).addTo(golfMap); }
       }catch(e){}
       recalcLiveStats();
@@ -798,7 +833,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   async function setLocationEnabled(on, silent){
     locationEnabled = on;
-    try{ await window.storage.set('app:locationEnabled', on?'1':'0'); }catch(e){}
+    try{ await storageAPI.set('app:locationEnabled', on?'1':'0'); }catch(e){}
     const sw = document.getElementById('locSwitch');
     if(on){
       if(watchId !== null) return;
@@ -812,7 +847,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(!silent) alert('Could not get your location: ' + e.message);
         if(sw) sw.checked = false;
         locationEnabled = false;
-        try{ await window.storage.set('app:locationEnabled','0'); }catch(err){}
+        try{ await storageAPI.set('app:locationEnabled','0'); }catch(err){}
         return;
       }
       watchId = navigator.geolocation.watchPosition(pos => {
@@ -886,7 +921,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   async function setCompassEnabled(on, silent){
     compassEnabled = on;
-    try{ await window.storage.set('app:compassEnabled', on?'1':'0'); }catch(e){}
+    try{ await storageAPI.set('app:compassEnabled', on?'1':'0'); }catch(e){}
     const sw = document.getElementById('compassSwitch');
     if(on){
       try{
@@ -901,7 +936,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(!silent) alert('Compass not available on this device/browser: ' + e.message);
         if(sw) sw.checked = false;
         compassEnabled = false;
-        try{ await window.storage.set('app:compassEnabled','0'); }catch(err){}
+        try{ await storageAPI.set('app:compassEnabled','0'); }catch(err){}
       }
     } else {
       window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
@@ -1030,7 +1065,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const caption = document.getElementById('video-caption');
     const btn = document.getElementById('video-fix-btn');
     try{
-      const res = await window.storage.get('hole1:videoId');
+      const res = await storageAPI.get('hole1:videoId');
       if(res && res.value){
         iframe.src = 'https://www.youtube.com/embed/' + res.value;
         caption.textContent = 'Your saved link for Hole 1.';
@@ -1043,7 +1078,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(!id){ alert('Could not read a YouTube video ID from that.'); return; }
       iframe.src = 'https://www.youtube.com/embed/' + id;
       caption.textContent = 'Your saved link for Hole 1.';
-      try{ await window.storage.set('hole1:videoId', id); }catch(e){}
+      try{ await storageAPI.set('hole1:videoId', id); }catch(e){}
     });
   }
 
@@ -1052,14 +1087,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const el = document.getElementById(id);
     const status = document.getElementById(statusId);
     try{
-      const res = await window.storage.get(key);
+      const res = await storageAPI.get(key);
       if(res && res.value){
         el.value = res.value;
       } else {
         let migrated = '';
-        try{ const a = await window.storage.get('hole1:overview:notes'); if(a && a.value) migrated += a.value; }catch(e){}
-        try{ const b = await window.storage.get('hole1:green:notes'); if(b && b.value) migrated += (migrated ? '\n\n' : '') + b.value; }catch(e){}
-        if(migrated){ el.value = migrated; try{ await window.storage.set(key, migrated); }catch(e){} }
+        try{ const a = await storageAPI.get('hole1:overview:notes'); if(a && a.value) migrated += a.value; }catch(e){}
+        try{ const b = await storageAPI.get('hole1:green:notes'); if(b && b.value) migrated += (migrated ? '\n\n' : '') + b.value; }catch(e){}
+        if(migrated){ el.value = migrated; try{ await storageAPI.set(key, migrated); }catch(e){} }
       }
     }catch(e){}
     let saveTimer;
@@ -1067,7 +1102,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       status.textContent = 'saving…';
       clearTimeout(saveTimer);
       saveTimer = setTimeout(async () => {
-        try{ await window.storage.set(key, el.value); status.textContent = 'saved ✓'; }
+        try{ await storageAPI.set(key, el.value); status.textContent = 'saved ✓'; }
         catch(e){ status.textContent = 'save failed — try again'; }
       }, 600);
     });
@@ -1104,7 +1139,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const p = PERSONAS[selectedPersonaIdx];
       document.getElementById('personaDesc').textContent = p ? p.tag + ' Fictional character, not a real person.' : '';
       updatePersonaLabel();
-      try{ await window.storage.set('app:personaIndex', String(selectedPersonaIdx)); }catch(e){}
+      try{ await storageAPI.set('app:personaIndex', String(selectedPersonaIdx)); }catch(e){}
     });
     sel.dispatchEvent(new Event('change'));
   }
@@ -1231,10 +1266,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   // ---------------- init ----------------
   (async function init(){
-    try{ const res = await window.storage.get('app:selectedTee'); if(res && res.value) selectedTee = res.value; }catch(e){}
-    try{ const res = await window.storage.get('app:personaIndex'); if(res && res.value) selectedPersonaIdx = parseInt(res.value,10) || 0; }catch(e){}
-    try{ const res = await window.storage.get('hole1:lzOverride'); if(res && res.value) lzOverride = parseInt(res.value,10); }catch(e){}
-    try{ const res = await window.storage.get('ui:collapsed'); if(res && res.value) collapsedState = JSON.parse(res.value); }catch(e){}
+    try{ const res = await storageAPI.get('app:selectedTee'); if(res && res.value) selectedTee = res.value; }catch(e){}
+    try{ const res = await storageAPI.get('app:personaIndex'); if(res && res.value) selectedPersonaIdx = parseInt(res.value,10) || 0; }catch(e){}
+    try{ const res = await storageAPI.get('hole1:lzOverride'); if(res && res.value) lzOverride = parseInt(res.value,10); }catch(e){}
+    try{ const res = await storageAPI.get('ui:collapsed'); if(res && res.value) collapsedState = JSON.parse(res.value); }catch(e){}
 
     applyCollapsedState();
     wireCollapsibles();
@@ -1246,11 +1281,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     initGolfMap();
 
     try{
-      const locRes = await window.storage.get('app:locationEnabled');
+      const locRes = await storageAPI.get('app:locationEnabled');
       if(locRes && locRes.value === '1'){ document.getElementById('locSwitch').checked = true; setLocationEnabled(true, true); }
     }catch(e){}
     try{
-      const compRes = await window.storage.get('app:compassEnabled');
+      const compRes = await storageAPI.get('app:compassEnabled');
       if(compRes && compRes.value === '1'){ document.getElementById('compassSwitch').checked = true; setCompassEnabled(true, true); }
     }catch(e){}
   })();

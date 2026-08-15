@@ -156,6 +156,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   .compass-wrap{ display:flex; justify-content:center; padding:6px 0; }
   .compass-rose{ width:180px; height:180px; }
+  .shot-direction-wrap{ display:flex; justify-content:center; padding:8px 0 2px; }
+  .shot-direction-svg{ width:120px; height:120px; }
+  .shot-direction-row{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:6px; }
+  .shot-direction-label{ font-family:'Fraunces',serif; font-weight:700; font-size:16px; color:var(--ink); text-align:center; }
   .wind-readout{ text-align:center; font-family:'Fraunces',serif; font-weight:700; font-size:22px; color:var(--ink); margin-top:4px; }
   .wind-readout small{ font-family:'Space Mono',monospace; font-size:12px; font-weight:400; color:var(--ink-soft); }
   select.voice-select{ flex:1; font-family:'Space Mono',monospace; font-size:12px; padding:9px 8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
@@ -241,6 +245,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div id="golfMap"></div>
         <div class="map-caption" id="locHint" style="margin-top:8px;">Turn on "Use my location" in Options to get live distances here.</div>
+
+        <div id="shotDirectionWrap" style="display:none;">
+          <div class="shot-direction-wrap">
+            <svg class="shot-direction-svg" id="shotDirectionSvg" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="54" fill="#F3F5EC" stroke="rgba(35,41,30,.18)" stroke-width="2"/>
+              <g id="shotArrowGroup" transform="rotate(0 60 60)">
+                <line x1="60" y1="60" x2="60" y2="18" stroke="#7C6A40" stroke-width="5" stroke-linecap="round"/>
+                <path d="M60 8 L74 30 L46 30 Z" fill="#7C6A40"/>
+              </g>
+              <circle cx="60" cy="60" r="4" fill="#23291E"/>
+            </svg>
+          </div>
+          <div class="shot-direction-row">
+            <div class="shot-direction-label" id="shotDirectionLabel">Target ahead</div>
+            <button class="action-btn secondary" id="faceTargetBtn" style="margin:0;">Face target</button>
+          </div>
+          <div class="map-caption" id="shotDirectionCaption" style="text-align:center; margin-top:4px;"></div>
+        </div>
+
         <div class="live-stats" id="liveStats" style="display:none;">
           <div class="live-stat"><div class="k">To pin</div><div class="v" id="stat-pin">—</div></div>
           <div class="live-stat"><div class="k">To target</div><div class="v" id="stat-target">—</div></div>
@@ -298,19 +321,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="compass-wrap">
           <svg class="compass-rose" id="compassRose" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="92" fill="#F3F5EC" stroke="rgba(35,41,30,.2)" stroke-width="2"/>
-            <g id="roseGroup">
-              <text x="100" y="24" font-family="Space Mono, monospace" font-size="14" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
-              <text x="176" y="105" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">E</text>
-              <text x="100" y="186" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">S</text>
-              <text x="24" y="105" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">W</text>
-              <g id="windArrowGroup" transform="rotate(0 100 100)" style="opacity:0; transition:opacity .3s;">
-                <line x1="100" y1="100" x2="100" y2="35" stroke="#7C6A40" stroke-width="4" stroke-linecap="round"/>
-                <path d="M100 26 L112 46 L88 46 Z" fill="#7C6A40"/>
-              </g>
+            <text x="100" y="24" font-family="Space Mono, monospace" font-size="14" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
+            <text x="176" y="105" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">E</text>
+            <text x="100" y="186" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">S</text>
+            <text x="24" y="105" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">W</text>
+            <!-- heading needle: shows which way YOU are facing. Thin, muted, separate from the wind arrow on purpose. -->
+            <g id="headingNeedleGroup" transform="rotate(0 100 100)" style="opacity:0; transition:opacity .3s;">
+              <line x1="100" y1="100" x2="100" y2="46" stroke="#6E8E88" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/>
+            </g>
+            <!-- wind arrow: rotation is ALWAYS the raw compass bearing wind is coming FROM. It never
+                 inherits or combines with heading/rose rotation — it only moves when the wind reading changes. -->
+            <g id="windArrowGroup" transform="rotate(0 100 100)" style="opacity:0; transition:opacity .3s;">
+              <line x1="100" y1="100" x2="100" y2="35" stroke="#7C6A40" stroke-width="4" stroke-linecap="round"/>
+              <path d="M100 26 L112 46 L88 46 Z" fill="#7C6A40"/>
             </g>
             <circle cx="100" cy="100" r="4" fill="#23291E"/>
           </svg>
         </div>
+        <div class="map-caption" id="headingCaption" style="text-align:center; margin-top:2px;"></div>
         <div class="wind-readout" id="windReadout">— km/h — · —°</div>
         <div class="map-caption" id="windCompassInfo" style="text-align:center;">Turn on "Enable compass" in Options so the rose turns with your phone.</div>
         <div style="display:flex; justify-content:center; margin-top:8px;">
@@ -342,25 +370,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
 
-    <div class="card" data-collapse-key="miss">
-      <div class="section-label"><span class="label-title">Miss it here <span class="est-badge">Estimated</span></span><button class="toggle-text" type="button">Hide</button></div>
-      <div class="card-body">
-        <ul class="plain">
-          <li><span class="marker water"></span><div><span class="li-title">Best miss: short-right</span><div class="li-note">Leaves an uphill chip with the green running toward you.</div></div></li>
-          <li><span class="marker bunker"></span><div><span class="li-title">Avoid: front-left bunker</span><div class="li-note">Short-sided; green runs away from this angle.</div></div></li>
-          <li><span class="marker bunker"></span><div><span class="li-title">Avoid: long into back bunker</span><div class="li-note">Fast downhill recovery back toward the pin.</div></div></li>
-        </ul>
-      </div>
-    </div>
-
     <div class="card" data-collapse-key="flyover">
       <div class="section-label"><span class="label-title">Fly-over</span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
         <div class="video-wrap">
           <iframe id="video-h1" src="https://www.youtube.com/embed/bV1UaLcXcmE" title="Hole 1 fly-over" loading="lazy" allowfullscreen></iframe>
         </div>
-        <div class="map-caption" id="video-caption">From Wooden Sticks' "Take a Closer Look at Each Golf Hole" series — pulled in hole order, unconfirmed against the actual hole 1 footage.</div>
-        <div class="video-fix"><button id="video-fix-btn">Wrong video? Fix it</button></div>
+        <div class="map-caption" id="video-caption">Hole 1 fly-over, from Wooden Sticks' course video series.</div>
       </div>
     </div>
 
@@ -384,6 +400,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button class="modal-close" id="closeOptionsBtn">Done</button>
     </div>
     <div class="modal-sub">Set these once — they apply across the round.</div>
+    <div class="map-caption" id="storageStatus" style="margin-bottom:10px; padding:8px 10px; border-radius:8px; background:rgba(35,41,30,.06);">Checking storage…</div>
 
     <div class="opt-section">
       <div class="section-label"><span class="label-title">Location &amp; sensors</span></div>
@@ -453,6 +470,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   })();
   if(typeof window.storage === 'undefined'){
     console.warn('Wooden Sticks Caddie Book: window.storage not found — using localStorage fallback so your data still saves on this device.');
+  }
+  const usingNativeStorage = (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function');
+
+  async function testStorage(){
+    const el = document.getElementById('storageStatus');
+    if(!el) return;
+    try{
+      const testVal = 'ok-' + Date.now();
+      await storageAPI.set('__storagetest__', testVal);
+      const readBack = await storageAPI.get('__storagetest__');
+      if(readBack && readBack.value === testVal){
+        el.textContent = usingNativeStorage
+          ? 'Storage: working (synced by Claude).'
+          : 'Storage: working (saved to this browser only — reopen the SAME link/tab to see your data; a fresh download or a different browser starts empty).';
+        el.style.color = '';
+      } else {
+        el.textContent = 'Storage: wrote data but could not read it back. Something is blocking storage in this browser — try opening the file in Safari/Chrome directly instead of an in-app viewer.';
+        el.style.color = '#7C6A40';
+      }
+    }catch(e){
+      el.textContent = 'Storage: NOT WORKING in this browser (' + e.message + '). Your entries will only last until you close this tab. Try opening the file in Safari or Chrome directly rather than a preview/in-app viewer.';
+      el.style.color = '#7C6A40';
+    }
   }
 
   const TEES = [
@@ -639,10 +679,34 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   document.getElementById('openOptionsBtn').addEventListener('click', async () => {
     await loadClubs();
     renderClubRows();
+    testStorage();
     document.getElementById('optionsModal').classList.add('open');
   });
   document.getElementById('closeOptionsBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('closeOptionsBtn');
+    const clubCountBefore = document.querySelectorAll('#clubRows input').length;
+    let filledCount = 0;
+    document.querySelectorAll('#clubRows input').forEach(inp => { if(parseInt(String(inp.value).trim(),10) > 0) filledCount++; });
+
     await saveClubsFromForm();
+
+    // verify what actually landed in storage, not just what we intended to write
+    let verified = false;
+    try{
+      const check = await storageAPI.get('clubs:bag');
+      if(check && check.value){
+        const parsed = JSON.parse(check.value);
+        verified = Object.keys(parsed).length === filledCount;
+      } else {
+        verified = filledCount === 0;
+      }
+    }catch(e){ verified = false; }
+
+    if(!verified && filledCount > 0){
+      alert('Clubs did not save correctly — ' + filledCount + ' club(s) entered but the save could not be verified. Check the storage status message at the top of this menu, then try again.');
+      return; // keep modal open so they don't lose what they typed
+    }
+
     document.getElementById('optionsModal').classList.remove('open');
     refreshShotPlan(false);
   });
@@ -765,12 +829,43 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     updateObstacleLiveStatus(distanceCovered, backOffset);
   }
 
+  function updateShotDirection(){
+    const wrap = document.getElementById('shotDirectionWrap');
+    if(!wrap) return;
+    const dest = targetMarker || pinMarker;
+    if(!userMarker || !dest){ wrap.style.display = 'none'; return; }
+
+    const u = userMarker.getLatLng(), d = dest.getLatLng();
+    const bearing = bearingDeg(u.lat, u.lng, d.lat, d.lng);
+    const arrowGroup = document.getElementById('shotArrowGroup');
+    const label = document.getElementById('shotDirectionLabel');
+    const caption = document.getElementById('shotDirectionCaption');
+    const destName = targetMarker ? 'Target' : 'Pin';
+
+    if(compassEnabled){
+      const rel = (bearing - currentHeading + 360) % 360;
+      arrowGroup.setAttribute('transform', `rotate(${rel} 60 60)`);
+      label.textContent = `${destName} ahead`;
+      caption.textContent = 'Turn until the arrow points straight up, then walk that way.';
+    } else {
+      arrowGroup.setAttribute('transform', `rotate(${bearing} 60 60)`);
+      label.textContent = `${destName}: ${compass(bearing)}`;
+      caption.textContent = 'Enable compass in Options for a live turn-and-go arrow.';
+    }
+    wrap.style.display = '';
+  }
+  document.getElementById('faceTargetBtn').addEventListener('click', () => {
+    if(!compassEnabled){ document.getElementById('openOptionsBtn').click(); return; }
+    updateShotDirection();
+  });
+
   function recalcLiveStats(){
     const statsWrap = document.getElementById('liveStats');
     const statPin = document.getElementById('stat-pin');
     const statTarget = document.getElementById('stat-target');
     const statTargetFront = document.getElementById('stat-target-front');
     const locHint = document.getElementById('locHint');
+    updateShotDirection();
     if(!userMarker || !pinMarker){
       if(statsWrap) statsWrap.style.display='none';
       if(locHint) locHint.style.display = userMarker ? 'none' : '';
@@ -819,6 +914,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
   function toRad(d){ return d*Math.PI/180; }
   function toDeg(r){ return r*180/Math.PI; }
+  function bearingDeg(lat1,lon1,lat2,lon2){
+    const y = Math.sin(toRad(lon2-lon1)) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon2-lon1));
+    return (toDeg(Math.atan2(y,x)) + 360) % 360;
+  }
   function haversineYards(lat1,lon1,lat2,lon2){
     const R=6371000;
     const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
@@ -863,12 +963,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   let currentHeading = 0, currentWindDir = null, windSpeedVal = null, windTempVal = null;
 
   function renderCompass(){
-    const roseGroup = document.getElementById('roseGroup');
+    // Wind arrow rotation is ALWAYS just the raw wind bearing — completely independent of
+    // device heading. It only moves when the wind reading itself changes.
     const windArrowGroup = document.getElementById('windArrowGroup');
-    if(roseGroup) roseGroup.setAttribute('transform', `rotate(${-currentHeading} 100 100)`);
     if(windArrowGroup && currentWindDir!==null){
       windArrowGroup.setAttribute('transform', `rotate(${currentWindDir} 100 100)`);
       windArrowGroup.style.opacity = 1;
+    }
+    // Heading needle is a separate element showing which way YOU'RE facing — it never
+    // touches the wind arrow's transform.
+    const headingNeedleGroup = document.getElementById('headingNeedleGroup');
+    const headingCaption = document.getElementById('headingCaption');
+    if(headingNeedleGroup){
+      if(currentHeading !== null && compassEnabled){
+        headingNeedleGroup.setAttribute('transform', `rotate(${currentHeading} 100 100)`);
+        headingNeedleGroup.style.opacity = 1;
+        if(headingCaption) headingCaption.textContent = `Facing ${compass(currentHeading)}`;
+      } else {
+        headingNeedleGroup.style.opacity = 0;
+        if(headingCaption) headingCaption.textContent = '';
+      }
     }
     const info = document.getElementById('windCompassInfo');
     const readout = document.getElementById('windReadout');
@@ -880,8 +994,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(info){
       let txt = '';
       if(windTempVal!==null) txt += `${Math.round(windTempVal)}°F`;
-      txt += currentHeading ? (txt?' · ':'') + 'compass on, rose tracks your heading' : '';
-      if(!txt) txt = 'Turn on "Enable compass" in Options so the rose turns with your phone.';
+      if(!txt) txt = 'Tap "Refresh wind" for current conditions. Wind arrow always points to true wind direction, regardless of which way you\'re facing.';
       info.textContent = txt;
     }
   }
@@ -917,6 +1030,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     else return;
     currentHeading = heading;
     renderCompass();
+    updateShotDirection();
   }
 
   async function setCompassEnabled(on, silent){
@@ -932,6 +1046,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         window.addEventListener('deviceorientationabsolute', handleOrientation, true);
         window.addEventListener('deviceorientation', handleOrientation, true);
         if(!cachedWind) refreshWind();
+        updateShotDirection();
       }catch(e){
         if(!silent) alert('Compass not available on this device/browser: ' + e.message);
         if(sw) sw.checked = false;
@@ -943,6 +1058,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.removeEventListener('deviceorientation', handleOrientation, true);
       currentHeading = 0;
       renderCompass();
+      updateShotDirection();
     }
   }
 
@@ -1063,23 +1179,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   async function wireVideo(){
     const iframe = document.getElementById('video-h1');
     const caption = document.getElementById('video-caption');
-    const btn = document.getElementById('video-fix-btn');
     try{
       const res = await storageAPI.get('hole1:videoId');
       if(res && res.value){
         iframe.src = 'https://www.youtube.com/embed/' + res.value;
-        caption.textContent = 'Your saved link for Hole 1.';
+        caption.textContent = 'Hole 1 fly-over.';
       }
     }catch(e){}
-    btn.addEventListener('click', async () => {
-      const input = window.prompt('Paste the correct YouTube link or video ID for Hole 1:');
-      if(!input) return;
-      const id = extractYouTubeId(input);
-      if(!id){ alert('Could not read a YouTube video ID from that.'); return; }
-      iframe.src = 'https://www.youtube.com/embed/' + id;
-      caption.textContent = 'Your saved link for Hole 1.';
-      try{ await storageAPI.set('hole1:videoId', id); }catch(e){}
-    });
   }
 
   // ---------------- notes (persistent, single box) ----------------

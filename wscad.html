@@ -231,9 +231,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <div class="content" id="content">
 
-    <div class="card" id="caddieReadCard" data-collapse-key="caddieread" style="display:none;">
+    <div class="card" id="caddieReadCard" data-collapse-key="caddieread">
       <div class="section-label"><span class="label-title">Caddie Read</span><button class="toggle-text" type="button">Hide</button></div>
-      <div class="card-body" id="caddieReadBody"></div>
+      <div class="card-body">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+          <span style="font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft);">Distance to pin</span>
+          <input type="number" inputmode="numeric" id="pinDistanceInput" min="0" max="600" style="width:80px; font-family:'Space Mono',monospace; font-size:15px; font-weight:700; text-align:center; padding:7px; border-radius:8px; border:1px solid rgba(35,41,30,.25); background:#F3F5EC; color:var(--ink);">
+          <span style="font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft);">yd</span>
+          <span class="map-caption" style="margin-left:auto; text-align:right;">auto-fills once you drop a pin</span>
+        </div>
+        <div id="caddieReadBody"></div>
+      </div>
     </div>
 
     <div class="card" data-collapse-key="pintarget">
@@ -270,35 +278,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="live-stat"><div class="k">Target→front</div><div class="v" id="stat-target-front">—</div></div>
         </div>
 
-        <div style="display:flex; align-items:center; gap:8px; margin:14px 0 4px;">
-          <span style="font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft);">Distance to pin</span>
-          <input type="number" inputmode="numeric" id="pinDistanceInput" min="0" max="600" style="width:80px; font-family:'Space Mono',monospace; font-size:15px; font-weight:700; text-align:center; padding:7px; border-radius:8px; border:1px solid rgba(35,41,30,.25); background:#F3F5EC; color:var(--ink);">
-          <span style="font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft);">yd</span>
-        </div>
-        <div id="planResults"><div class="map-caption">Set a pin, or enter a distance above, to see a club recommendation.</div></div>
-
         <button class="details-toggle" type="button" data-details="pintarget">Details</button>
-        <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. Turn on "Use my location" in Options for real live yardage instead of typing it in; distance then auto-fills above, though you can still edit it. Wind/temperature come from Open-Meteo using your location when enabled. Club matches come from the yardages in My Clubs. This is a planning aid, not a guarantee.</div>
-      </div>
-    </div>
-
-    <div class="card" data-collapse-key="teetogreen">
-      <div class="section-label"><span class="label-title">Tee to green <span class="est-badge" id="stripBadge">Estimated</span></span><button class="toggle-text" type="button">Hide</button></div>
-      <div class="card-body">
-        <div class="lz-row">
-          <div class="lz-half">
-            <input type="range" id="lzSlider" class="lz-slider" min="50" max="400" step="1" value="230">
-            <div class="lz-readout"><span>Tee</span><span id="lzValueLabel">230y</span><span>Green</span></div>
-          </div>
-          <div class="fmb-half">
-            <div class="fmb-row"><span>Front</span><b id="leg-front">206y</b></div>
-            <div class="fmb-row"><span>Mid</span><b id="leg-mid">221y</b></div>
-            <div class="fmb-row"><span>Back</span><b id="leg-back">236y</b></div>
-          </div>
-        </div>
-        <div class="map-caption" id="strip-tee-label" style="margin-top:10px;">Oak tee · 451y total</div>
-        <button class="details-toggle" type="button" data-details="teetogreen">Details</button>
-        <div class="details-panel" id="teetogreen-details-panel" style="display:none;">Drag the marker to set your actual landing zone. Front/Mid/Back are the approach shot — landing zone to the green — not distance from the tee. Landing zone + approach to middle always adds up to the full hole yardage for your selected tee.</div>
+        <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. Turn on "Use my location" in Options for real live distances. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically.</div>
       </div>
     </div>
 
@@ -506,14 +487,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   const GREEN_HALF_DEPTH = 15; // estimated half-depth of green, yards (scorecard total = middle of green)
   const HOLE1 = {
     name:'Church Pews', par:4, hcp:4,
-    teeShot:'Driver — favour the right side, stay clear of the Church Pews left.',
+    teeShotTip:'Favour the right side, stay clear of the Church Pews left.',
     bestMiss:'short-right',
-    avoid:'the left bunker off the tee, and the front-left greenside bunker on approach'
+    approachTip:'Best miss is short-right. Avoid the greenside bunkers.'
   };
 
   let selectedTee = 'oak';
-  let lzOverride = null; // user-set landing zone (yards from tee)
-  const HOLE_YARDAGES = {};
 
   function buildTeeSelector(){
     const wrap = document.getElementById('teeSelect');
@@ -528,48 +507,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   }
 
-  function paintSliderTrack(slider){
-    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-    slider.style.background = `linear-gradient(to right, var(--wood) 0%, var(--wood) ${pct}%, #B7A987 ${pct}%, #B7A987 100%)`;
-  }
-
-  function recomputeStripFromLZ(){
-    const tee = TEES.find(t => t.key===selectedTee);
-    const total = tee.yards[1];
-    if(!total) return;
-
-    const chip = document.getElementById('ov-yards');
-    if(chip) chip.textContent = total + 'y';
-
-    const slider = document.getElementById('lzSlider');
-    if(!slider) return;
-
-    const lzMin = 50;
-    const lzMax = Math.max(total - 30, lzMin + 10);
-    if(lzOverride === null) lzOverride = Math.min(230, Math.round(total*0.55));
-    const lz = Math.min(Math.max(lzOverride, lzMin), lzMax);
-
-    slider.min = lzMin; slider.max = lzMax; slider.value = lz;
-    paintSliderTrack(slider);
-
-    const front = (total - GREEN_HALF_DEPTH) - lz;
-    const mid = total - lz;
-    const back = (total + GREEN_HALF_DEPTH) - lz;
-    HOLE_YARDAGES[1] = { front, mid, back, total, lz };
-
-    document.getElementById('lzValueLabel').textContent = lz + 'y';
-    document.getElementById('strip-tee-label').textContent = tee.name + ' tee · ' + total + 'y total';
-    document.getElementById('leg-front').textContent = front + 'y';
-    document.getElementById('leg-mid').textContent = mid + 'y';
-    document.getElementById('leg-back').textContent = back + 'y';
-
-    const stripBadge = document.getElementById('stripBadge');
-    if(stripBadge){ stripBadge.textContent = 'Estimated'; stripBadge.classList.remove('live-badge'); }
-
-    const pinInput = document.getElementById('pinDistanceInput');
-    if(pinInput && !pinInput.dataset.touched) pinInput.value = mid;
-  }
-
   function applyTee(){
     document.querySelectorAll('.tee-btn').forEach(b => b.classList.toggle('active', b.dataset.tee===selectedTee));
 
@@ -577,23 +514,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const tee = TEES.find(t => t.key===selectedTee);
     if(chip && tee.yards[1]) chip.textContent = tee.yards[1] + 'y';
 
-    if(typeof userMarker !== 'undefined' && userMarker && typeof pinMarker !== 'undefined' && pinMarker){
-      updateLiveHoleView();
-    } else {
-      recomputeStripFromLZ();
-    }
-    refreshShotPlan(false);
+    const pinInput = document.getElementById('pinDistanceInput');
+    if(pinInput && !pinInput.dataset.touched && !(userMarker && pinMarker)) pinInput.value = tee.yards[1];
+
+    if(userMarker && pinMarker) updateObstacleTracking();
+    updateCaddieRead(false);
 
     try{ storageAPI.set('app:selectedTee', selectedTee); }catch(e){}
   }
-
-  document.getElementById('lzSlider').addEventListener('input', (e) => {
-    lzOverride = parseInt(e.target.value, 10);
-    recomputeStripFromLZ();
-  });
-  document.getElementById('lzSlider').addEventListener('change', async () => {
-    try{ await storageAPI.set('hole1:lzOverride', String(lzOverride)); }catch(err){}
-  });
 
   // ---------------- collapsible cards ----------------
   let collapsedState = {};
@@ -650,7 +578,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       input.dataset.club = name; // set via property, not string interpolation — avoids attribute-quote bugs with club names
       const unit = document.createElement('span');
       unit.className = 'unit'; unit.textContent = 'yd';
-      row.appendChild(label); row.appendChild(input); row.appendChild(unit);
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button'; removeBtn.className = 'toggle-text'; removeBtn.textContent = 'Remove';
+      removeBtn.style.marginLeft = '4px';
+      removeBtn.addEventListener('click', () => row.remove());
+      row.appendChild(label); row.appendChild(input); row.appendChild(unit); row.appendChild(removeBtn);
       wrap.appendChild(row);
     });
   }
@@ -661,6 +593,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }catch(e){ clubBag = {}; }
   }
   async function saveClubsFromForm(){
+    // only rows still present in the DOM count — a club removed via "Remove" is simply
+    // absent from this query and therefore dropped from the saved bag.
     const inputs = document.querySelectorAll('#clubRows input');
     const newBag = {};
     inputs.forEach(inp => {
@@ -684,7 +618,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   });
   document.getElementById('closeOptionsBtn').addEventListener('click', async () => {
     const btn = document.getElementById('closeOptionsBtn');
-    const clubCountBefore = document.querySelectorAll('#clubRows input').length;
     let filledCount = 0;
     document.querySelectorAll('#clubRows input').forEach(inp => { if(parseInt(String(inp.value).trim(),10) > 0) filledCount++; });
 
@@ -708,7 +641,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     document.getElementById('optionsModal').classList.remove('open');
-    refreshShotPlan(false);
+    updateCaddieRead(false);
   });
   document.getElementById('addClubBtn').addEventListener('click', () => {
     const name = window.prompt('Club name (e.g. "2 Iron", "60° Wedge"):');
@@ -724,7 +657,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     input.dataset.club = name;
     const unit = document.createElement('span');
     unit.className = 'unit'; unit.textContent = 'yd';
-    row.appendChild(label); row.appendChild(input); row.appendChild(unit);
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button'; removeBtn.className = 'toggle-text'; removeBtn.textContent = 'Remove';
+    removeBtn.style.marginLeft = '4px';
+    removeBtn.addEventListener('click', () => row.remove());
+    row.appendChild(label); row.appendChild(input); row.appendChild(unit); row.appendChild(removeBtn);
     wrap.appendChild(row);
   });
 
@@ -782,18 +719,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   });
 
-  function clearLiveOverlay(){
-    const obBadge = document.getElementById('obstaclesBadge');
-    if(obBadge){ obBadge.textContent = 'Estimated'; obBadge.classList.remove('live-badge'); }
-    document.querySelectorAll('.ob-item').forEach(li => {
-      li.classList.remove('passed');
-      const le = li.querySelector('.ob-live');
-      if(le) le.textContent = '';
-    });
-    recomputeStripFromLZ();
-  }
+  function updateObstacleTracking(){
+    if(!userMarker || !pinMarker){
+      const obBadge = document.getElementById('obstaclesBadge');
+      if(obBadge){ obBadge.textContent = 'Estimated'; obBadge.classList.remove('live-badge'); }
+      document.querySelectorAll('.ob-item').forEach(li => {
+        li.classList.remove('passed');
+        const le = li.querySelector('.ob-live');
+        if(le) le.textContent = '';
+      });
+      return;
+    }
+    const u = userMarker.getLatLng(), p = pinMarker.getLatLng();
+    const dPin = haversineYards(u.lat,u.lng,p.lat,p.lng);
+    const tee = TEES.find(t => t.key===selectedTee);
+    const total = tee.yards[1];
+    const distanceCovered = total - dPin;
+    const backOffset = TIPS_TOTAL - total;
 
-  function updateObstacleLiveStatus(distanceCovered, backOffset){
+    const obBadge = document.getElementById('obstaclesBadge');
+    if(obBadge){ obBadge.textContent = 'Live'; obBadge.classList.add('live-badge'); }
+
     Object.keys(OBSTACLES_H1).forEach(id => {
       const li = document.querySelector(`.ob-item[data-obid="${id}"]`);
       if(!li) return;
@@ -803,30 +749,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(diff <= 5){ li.classList.add('passed'); if(liveEl) liveEl.textContent = ' · passed'; }
       else { li.classList.remove('passed'); if(liveEl) liveEl.textContent = ` · ~${Math.round(diff)}y ahead`; }
     });
-  }
-
-  function updateLiveHoleView(){
-    if(!userMarker || !pinMarker) return;
-    const u = userMarker.getLatLng(), p = pinMarker.getLatLng();
-    const dPin = haversineYards(u.lat,u.lng,p.lat,p.lng);
-    const tee = TEES.find(t => t.key===selectedTee);
-    const total = tee.yards[1];
-    const front = dPin - GREEN_HALF_DEPTH, mid = dPin, back = dPin + GREEN_HALF_DEPTH;
-    const distanceCovered = total - dPin;
-    const backOffset = TIPS_TOTAL - total;
-
-    const stripBadge = document.getElementById('stripBadge');
-    const obBadge = document.getElementById('obstaclesBadge');
-    if(stripBadge){ stripBadge.textContent = 'Live'; stripBadge.classList.add('live-badge'); }
-    if(obBadge){ obBadge.textContent = 'Live'; obBadge.classList.add('live-badge'); }
-
-    document.getElementById('strip-tee-label').textContent = `Live · ${Math.round(dPin)}y to middle of green from where you're standing`;
-    document.getElementById('leg-front').textContent = Math.round(front) + 'y';
-    document.getElementById('leg-mid').textContent = Math.round(mid) + 'y';
-    document.getElementById('leg-back').textContent = Math.round(back) + 'y';
-    document.getElementById('lzValueLabel').textContent = 'live';
-
-    updateObstacleLiveStatus(distanceCovered, backOffset);
   }
 
   function updateShotDirection(){
@@ -866,11 +788,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const statTargetFront = document.getElementById('stat-target-front');
     const locHint = document.getElementById('locHint');
     updateShotDirection();
+    updateObstacleTracking();
     if(!userMarker || !pinMarker){
       if(statsWrap) statsWrap.style.display='none';
       if(locHint) locHint.style.display = userMarker ? 'none' : '';
-      clearLiveOverlay();
-      refreshShotPlan(false);
+      updateCaddieRead(false);
       return;
     }
     if(locHint) locHint.style.display = 'none';
@@ -895,8 +817,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       pinInputEl.dataset.touched = '1';
     }
 
-    updateLiveHoleView();
-    refreshShotPlan(true);
+    updateCaddieRead(true);
   }
 
   // ---------------- location & compass permission toggles ----------------
@@ -1016,7 +937,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         cachedWind = data.current;
         cachedWindTime = Date.now();
         renderCompass();
-        refreshShotPlan(false);
+        updateCaddieRead(false);
       }
     }catch(e){ if(btn) alert('Could not fetch wind: ' + e.message); }
     finally{ if(btn){ btn.disabled=false; btn.textContent='Refresh wind'; } }
@@ -1065,10 +986,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   document.getElementById('locSwitch').addEventListener('change', (e) => setLocationEnabled(e.target.checked, false));
   document.getElementById('compassSwitch').addEventListener('change', (e) => setCompassEnabled(e.target.checked, false));
 
-  // ---------------- shot planner (merged pin/target + club recommendation) ----------------
-  // Single source of truth for "playing distance" and club pick — used by the on-screen
-  // recommendation, the visible Caddie Read card, and the voice readout. Nothing else
-  // computes this independently.
+  // ---------------- caddie recommendation engine ----------------
+  // Single source of truth. Returns pure structured data — no wording, no voice, no visuals.
+  // Everything else (the visible Caddie Read card, the spoken voice) formats this same object.
   function pickClub(bag, playingDist){
     const entries = Object.entries(bag);
     entries.sort((a,b) => Math.abs(a[1]-playingDist) - Math.abs(b[1]-playingDist));
@@ -1076,36 +996,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
   function clubNoteFor(club, playingDist){
     const diff = club[1] - playingDist;
-    if(diff >= 8) return `Easy ${club[0]} — plenty of club.`;
-    if(diff <= -8) return `Take one more if it's tight — full ${club[0]}.`;
-    return `Smooth ${club[0]}, right in your number.`;
+    if(diff >= 8) return 'plenty of club';
+    if(diff <= -8) return 'take one more if it\'s tight';
+    return 'right in your number';
   }
-  function windAdjustmentYards(){
-    if(!cachedWind) return 0;
-    const speedMph = cachedWind.wind_speed_10m * 0.621371; // rule-of-thumb is calibrated per mph
-    return speedMph * 0.5;
-  }
-  function currentRawDistance(){
-    if(userMarker && pinMarker){
-      const u=userMarker.getLatLng(), p=pinMarker.getLatLng();
-      return haversineYards(u.lat,u.lng,p.lat,p.lng);
-    }
-    if(pinInputEl && pinInputEl.value) return parseFloat(pinInputEl.value);
-    return null;
-  }
-  function buildCaddieRead(){
-    const rawDist = currentRawDistance();
-    const adjustment = windAdjustmentYards();
-    const playingDist = rawDist !== null ? rawDist + adjustment : null;
-    const hasClubs = Object.keys(clubBag).length > 0;
-    let club = null, clubNote = null;
-    if(playingDist !== null && hasClubs){
-      club = pickClub(clubBag, playingDist);
-      clubNote = clubNoteFor(club, playingDist);
-    }
-    let windLine = null;
-    if(cachedWind) windLine = `Wind ${Math.round(cachedWind.wind_speed_10m)} km/h from ${compass(cachedWind.wind_direction_10m)}, ${Math.round(cachedWind.temperature_2m)}°F.`;
-    return { rawDist, adjustment, playingDist, hasClubs, club, clubNote, windLine };
+  // "off the left/right" / "into you" / "helping" — relative to the direction of THIS shot,
+  // not just an absolute compass letter. shotBearingDeg is the direction the ball is travelling.
+  function windRelativeDescription(shotBearingDeg, windFromDeg){
+    let diff = ((windFromDeg - shotBearingDeg) + 540) % 360 - 180; // normalized -180..180
+    const abs = Math.abs(diff);
+    if(abs <= 30) return 'into you';
+    if(abs >= 150) return 'helping';
+    return diff > 0 ? 'off the right' : 'off the left';
   }
 
   const pinInputEl = document.getElementById('pinDistanceInput');
@@ -1113,7 +1015,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   pinInputEl.addEventListener('input', () => {
     pinInputEl.dataset.touched = '1';
     clearTimeout(planDebounce);
-    planDebounce = setTimeout(() => refreshShotPlan(false), 500);
+    planDebounce = setTimeout(() => updateCaddieRead(false), 500);
   });
 
   function shouldFetchWind(force){
@@ -1138,35 +1040,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }catch(e){ /* wind optional */ }
   }
 
-  async function refreshShotPlan(forceWindFetch){
-    const planResults = document.getElementById('planResults');
-    if(!planResults) return;
-
-    await loadClubs();
-    await fetchWindIfDue(forceWindFetch);
-    const r = buildCaddieRead();
-
-    if(r.rawDist === null){
-      planResults.innerHTML = '<div class="map-caption">Set a pin, or enter a distance above, to see a club recommendation.</div>';
-      return;
+  function buildCaddieRead(){
+    const hasUser = !!userMarker, hasPinMarker = !!pinMarker, hasTargetMarker = !!targetMarker;
+    let pinDist = null;
+    if(hasUser && hasPinMarker){
+      const u=userMarker.getLatLng(), p=pinMarker.getLatLng();
+      pinDist = haversineYards(u.lat,u.lng,p.lat,p.lng);
+    } else if(pinInputEl && pinInputEl.dataset.touched && pinInputEl.value){
+      pinDist = parseFloat(pinInputEl.value); // manual override — only counts once the golfer has actually entered something
     }
-    if(!r.hasClubs){
-      planResults.innerHTML = `<div class="caddie-line-raw">${Math.round(r.rawDist)} to pin</div><div class="map-caption" style="margin-top:6px;">Add your clubs in Options to get a club recommendation.</div>`;
-      return;
+    let targetDist = null;
+    if(hasUser && hasTargetMarker){
+      const u=userMarker.getLatLng(), t=targetMarker.getLatLng();
+      targetDist = haversineYards(u.lat,u.lng,t.lat,t.lng);
     }
 
-    const showsPlaying = Math.abs(r.adjustment) >= 1;
-    planResults.innerHTML = `
-      <div class="caddie-club-row">
-        <div>
-          <div class="caddie-line-raw">${Math.round(r.rawDist)} to pin</div>
-          ${showsPlaying ? `<div class="caddie-line-raw">Plays ${Math.round(r.playingDist)}</div>` : ''}
-        </div>
-        <div class="caddie-club">${r.club[0]}</div>
-      </div>
-      <div class="caddie-note">${r.clubNote}</div>
-      ${r.windLine ? `<div class="map-caption" style="margin-top:6px;">${r.windLine}</div>` : ''}
-    `;
+    const tee = TEES.find(t => t.key===selectedTee);
+    const teeTotal = tee.yards[1];
+
+    // Recommendation always follows whatever you're actually aiming at right now:
+    // Target if you've set one (that's your next shot), otherwise the pin, otherwise
+    // — nothing dropped yet — assume you're on the tee playing the full hole.
+    let recDist, phase;
+    if(targetDist !== null){ recDist = targetDist; phase = 'approach'; }
+    else if(pinDist !== null){ recDist = pinDist; phase = 'approach'; }
+    else { recDist = teeTotal; phase = 'tee'; }
+
+    let shotBearingDeg = null;
+    if(hasUser && hasTargetMarker){ const u=userMarker.getLatLng(), t=targetMarker.getLatLng(); shotBearingDeg = bearingDeg(u.lat,u.lng,t.lat,t.lng); }
+    else if(hasUser && hasPinMarker){ const u=userMarker.getLatLng(), p=pinMarker.getLatLng(); shotBearingDeg = bearingDeg(u.lat,u.lng,p.lat,p.lng); }
+
+    let windLine = null, adjustment = 0;
+    if(cachedWind){
+      if(shotBearingDeg !== null){
+        const windComponent = cachedWind.wind_speed_10m * Math.cos(toRad(cachedWind.wind_direction_10m - shotBearingDeg));
+        const speedMphComponent = windComponent * 0.621371; // rule-of-thumb calibrated per mph
+        adjustment = speedMphComponent > 0 ? speedMphComponent : speedMphComponent * 0.5; // headwind hurts more than tailwind helps
+        windLine = `${Math.round(cachedWind.wind_speed_10m)} km/h ${windRelativeDescription(shotBearingDeg, cachedWind.wind_direction_10m)}`;
+      } else {
+        windLine = `${Math.round(cachedWind.wind_speed_10m)} km/h from ${compass(cachedWind.wind_direction_10m)}`;
+      }
+    }
+
+    const playingDist = recDist + adjustment;
+    const hasClubs = Object.keys(clubBag).length > 0;
+    let club = null, clubNote = null;
+    if(hasClubs){ club = pickClub(clubBag, playingDist); clubNote = clubNoteFor(club, playingDist); }
+
+    const tip = phase === 'approach' ? HOLE1.approachTip : HOLE1.teeShotTip;
+
+    const showGreen = pinDist !== null && pinDist < 300;
+    const green = showGreen ? { front: pinDist - GREEN_HALF_DEPTH, middle: pinDist, back: pinDist + GREEN_HALF_DEPTH } : null;
+
+    return {
+      phase, tip, hasClubs, club, clubNote, windLine, adjustment,
+      hasTarget: targetDist !== null, targetDist, targetPlaying: targetDist!==null ? targetDist+adjustment : null,
+      hasPin: pinDist !== null, pinDist, pinPlaying: pinDist!==null ? pinDist+adjustment : null,
+      showGreen, green
+    };
   }
 
   // ---------------- video override ----------------
@@ -1217,15 +1148,112 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   wireNotes('notes-h1','status-h1','hole1:notes');
 
   // ---------------- voice caddie ----------------
+  // Architecture note (per your item 11): everything below only FORMATS the structured
+  // data from buildCaddieRead(). No persona ever changes the club, tip, wind math, or
+  // numbers — only how it's said.
+  function shuffleArr(arr){
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+  function makeRotator(list){
+    let queue = [];
+    return function next(){
+      if(queue.length === 0) queue = shuffleArr(list);
+      return queue.pop();
+    };
+  }
+  function factsFor(r){
+    const showsPlaying = Math.abs(r.adjustment) >= 1;
+    return {
+      hasClubs: r.hasClubs, club: (r.hasClubs && r.club) ? r.club[0] : null, clubNote: r.clubNote,
+      tip: r.tip, windLine: r.windLine, showsPlaying,
+      hasTarget: r.hasTarget, target: r.targetDist!==null ? Math.round(r.targetDist) : null, targetPlaying: r.targetPlaying!==null ? Math.round(r.targetPlaying) : null,
+      hasPin: r.hasPin, pin: r.pinDist!==null ? Math.round(r.pinDist) : null, pinPlaying: r.pinPlaying!==null ? Math.round(r.pinPlaying) : null,
+      showGreen: r.showGreen, green: r.green ? {front:Math.round(r.green.front), middle:Math.round(r.green.middle), back:Math.round(r.green.back)} : null
+    };
+  }
+
   const PERSONAS = [
-    { name:'Old Bones McGraw', tag:'Gravelly old-timer, no wasted words.', rate:0.85, pitch:0.7,  wrap:t=>`Alright now. ${t} That's the read.` },
-    { name:'Sunny Calloway',   tag:'Upbeat and a little too excited.',     rate:1.15, pitch:1.25, wrap:t=>`Okay okay, here we go! ${t} Let's have some fun out here!` },
-    { name:'The Professor',    tag:'Calm, precise, all business.',        rate:0.95, pitch:0.95, wrap:t=>`Here is the analysis. ${t} Proceed accordingly.` },
-    { name:'Duchess Fairway',  tag:'Poised and a touch posh.',            rate:0.9,  pitch:1.1,  wrap:t=>`Very well then. ${t} Do play it beautifully.` },
-    { name:'Big Country',      tag:'Laid-back, unhurried drawl.',         rate:0.8,  pitch:0.85, wrap:t=>`Alright, take your time. ${t} No rush now.` },
-    { name:'Ace',              tag:'Clipped, efficient, no fluff.',       rate:1.2,  pitch:1.0,  wrap:t=>`${t} Copy that.` },
-    { name:'Whisperin\' Sam',  tag:'Soft-spoken and steady.',             rate:0.85, pitch:0.9,  wrap:t=>`Nice and easy now. ${t} You've got this.` },
-    { name:'Coach K-9',        tag:'Full hype-man energy.',               rate:1.1,  pitch:1.1,  wrap:t=>`Let's GO! ${t} Now go get it!` }
+    {
+      name:'Southern', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85,
+      intros: makeRotator(["Alright partner,", "Well now,", "Here we go,", "Listen here,", "Alright, alright,", "Okay now,"]),
+      outros: makeRotator(["Go get her.", "That's the play, partner.", "Now go on and hit it.", "Let's see it.", "Go on now.", "There you go."]),
+      speak(f){
+        const parts = [];
+        if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}, partner.`);
+        else if(!f.hasClubs) parts.push(`Get your clubs into Options and I'll give you a number.`);
+        if(f.tip) parts.push(f.tip);
+        if(f.windLine) parts.push(`Wind's ${f.windLine}.`);
+        if(f.hasTarget) parts.push(`She's playin' about ${f.showsPlaying?f.targetPlaying:f.target} to your spot.`);
+        if(f.hasPin) parts.push(`${f.showsPlaying?f.pinPlaying:f.pin} to the flag.`);
+        if(f.showGreen) parts.push(`Front's ${f.green.front}, back's ${f.green.back}.`);
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Smoking Hot Chick', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2,
+      intros: makeRotator(["Okay babe,", "Alright hun,", "Here's the deal,", "Listen up,", "Okay, okay,", "Check it out,"]),
+      outros: makeRotator(["Go show 'em how it's done.", "Now go get it, tiger.", "You've got this.", "Go make it happen.", "Let's see that swing.", "Impress me."]),
+      speak(f){
+        const parts = [];
+        if(f.hasClubs && f.club) parts.push(`Go with the ${f.club}.`);
+        else if(!f.hasClubs) parts.push(`Add your clubs in Options so I can actually help you.`);
+        if(f.tip) parts.push(f.tip);
+        if(f.windLine) parts.push(`Wind's ${f.windLine}, by the way.`);
+        if(f.hasTarget) parts.push(`${f.target} to your spot, playing ${f.showsPlaying?f.targetPlaying:f.target}.`);
+        if(f.hasPin) parts.push(`${f.pin} to the pin, playing ${f.showsPlaying?f.pinPlaying:f.pin}.`);
+        if(f.showGreen) parts.push(`Green runs front ${f.green.front}, back ${f.green.back}.`);
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Sports Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05,
+      intros: makeRotator(["And here we go —", "Big moment here —", "Folks, this is the shot —", "Here's the situation —", "All eyes on this one —", "Here we are —"]),
+      outros: makeRotator(["Let's go!", "This could be the shot of the day!", "Here we go, folks!", "Let's see what he's got!", "This is the moment!", "Unbelievable opportunity here!"]),
+      speak(f){
+        const parts = [];
+        if(f.hasPin) parts.push(`We've got ${f.pin} to the pin.`);
+        if(f.hasPin && f.showsPlaying) parts.push(`Plays ${f.pinPlaying}.`);
+        if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}.`);
+        else if(!f.hasClubs) parts.push(`No clubs on file — get those into Options!`);
+        if(f.tip) parts.push(f.tip);
+        if(f.windLine) parts.push(`Wind is ${f.windLine}.`);
+        if(f.showGreen) parts.push(`Green plays front ${f.green.front}, back ${f.green.back}.`);
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Party Guy', tag:'Fun, enthusiastic, guys-weekend energy.', rate:1.15, pitch:1.1,
+      intros: makeRotator(["Yoooo,", "Alright boys,", "Dude, check it,", "Okay okay,", "Let's gooo,", "Big dawg,"]),
+      outros: makeRotator(["Let's rip it!", "Send it!", "Let's get a beer after this one.", "Big swing energy, let's go!", "Absolute unit, let's go!", "LFG."]),
+      speak(f){
+        const parts = [];
+        if(f.hasClubs && f.club) parts.push(`Grab the ${f.club}!`);
+        else if(!f.hasClubs) parts.push(`Bro, you gotta add your clubs in Options first.`);
+        if(f.tip) parts.push(f.tip);
+        if(f.windLine) parts.push(`Wind's ${f.windLine}!`);
+        if(f.hasTarget) parts.push(`${f.target} to your spot, plays ${f.showsPlaying?f.targetPlaying:f.target}!`);
+        if(f.hasPin) parts.push(`${f.pin} to the stick, plays ${f.showsPlaying?f.pinPlaying:f.pin}!`);
+        if(f.showGreen) parts.push(`Green's front ${f.green.front}, back ${f.green.back}!`);
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Best Friend', tag:'Relaxed, supportive — knows your game.', rate:0.98, pitch:0.98,
+      intros: makeRotator(["Okay so,", "Alright,", "Here's what I'm seeing,", "So,", "Alright man,", "Here's the read,"]),
+      outros: makeRotator(["You've got this.", "Trust it.", "Go make a good swing.", "You know this shot.", "Let's see it.", "You're good here."]),
+      speak(f){
+        const parts = [];
+        if(f.hasPin) parts.push(`${f.pin} to the pin${f.showsPlaying?`, but it's playing ${f.pinPlaying}`:''}.`);
+        if(f.hasClubs && f.club) parts.push(`I'd take the ${f.club}${f.tip?`, and `+f.tip.charAt(0).toLowerCase()+f.tip.slice(1):''}`);
+        else { if(f.tip) parts.push(f.tip); if(!f.hasClubs) parts.push(`Add your clubs in Options and I'll be able to give you a real number.`); }
+        if(f.windLine) parts.push(`Wind's ${f.windLine}.`);
+        if(f.hasTarget) parts.push(`${f.target} to your spot, plays ${f.showsPlaying?f.targetPlaying:f.target}.`);
+        if(f.showGreen) parts.push(`Front's ${f.green.front}, back's ${f.green.back}.`);
+        return parts.join(' ');
+      }
+    }
   ];
   let selectedPersonaIdx = 0;
 
@@ -1242,104 +1270,55 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     sel.value = String(selectedPersonaIdx);
     sel.addEventListener('change', async () => {
       selectedPersonaIdx = parseInt(sel.value,10);
-      const p = PERSONAS[selectedPersonaIdx];
-      document.getElementById('personaDesc').textContent = p ? p.tag + ' Fictional character, not a real person.' : '';
+      updatePersonaDesc();
       updatePersonaLabel();
       try{ await storageAPI.set('app:personaIndex', String(selectedPersonaIdx)); }catch(e){}
     });
-    sel.dispatchEvent(new Event('change'));
+    updatePersonaDesc();
   }
-
-  // Original phrases written in the spirit of real golf slang (big dog, in the leather, flush it, etc.)
-  // Not scraped from Reddit or any external source — see chat for why.
-  const PHRASES_LONG = [
-    "Hit the big dog.", "Let the big dog eat.", "Grip it and rip it.", "Turn it loose.",
-    "Send it down the pipe.", "Give it a ride.", "Put a pass on it.", "Air it out.",
-    "Swing free and let it fly.", "Get up on your horse and hit it.", "Chase after that one.",
-    "Full send, stay balanced.", "Load up and let it go.", "Big cut, no fear.",
-    "Reach back for a little extra.", "That's a big-dog swing right there.", "Rip it and reel it in.",
-    "Trust the speed, let it happen.", "Go get it — full turn, full release.", "Swing out to your spikes."
-  ];
-  const PHRASES_SHORT = [
-    "Back spin, kid.", "Feel it, don't force it.", "Trust your hands here.", "Land it soft.",
-    "Spin it and sit it.", "Chip it close and walk it in.", "Quiet hands, soft landing.",
-    "Little swing, big trust.", "Let the loft do the work.", "Nip it clean.",
-    "Small motion, smooth tempo.", "Take dead aim, no more.", "Pick your spot and feed it in.",
-    "Soft hands, soft landing.", "This one's a feel shot — trust it.", "Committed and delicate, both at once.",
-    "Give it a little check and release.", "This is a scoring club in your hands.", "Precision over power here.",
-    "Dial it in nice and easy."
-  ];
-  const PHRASES_STEADY = [
-    "Stick to your process.", "One shot at a time.", "Trust your swing.", "Smooth tempo, smooth result.",
-    "Stay in the moment.", "Commit to the shot.", "Deep breath, clear mind.", "Play your game, not theirs.",
-    "Pick your target and trust it.", "See it, feel it, go.", "Let the club do the work.",
-    "Slow is smooth, smooth is fast.", "Quiet mind, confident swing.", "You've hit this shot before — hit it again.",
-    "Stay present, stay patient.", "Good tempo beats hard swings.", "Balance first, everything else follows.",
-    "Nothing to prove, just play.", "Give yourself a chance and let it happen.", "Own this shot before you take it.",
-    "Rhythm over rush.", "Breathe out on the takeaway.", "This is your shot to hit, not survive.",
-    "Stay loose, stay ready.", "One good swing at a time.", "Keep the big picture out of your head — just this shot.",
-    "Trust what you practiced.", "Let go of the last one.", "This one's a fresh start.",
-    "Play smart, swing free.", "You know this shot.", "Find your rhythm and stay in it.",
-    "Confidence is a decision — make it now.", "Simple thoughts, clean strike.", "Let the target pull the swing.",
-    "Stay patient through impact.", "Good process, good outcome — trust it.", "Keep the club moving, stay relaxed.",
-    "Play it like you already made it.", "Quiet feet, quiet mind."
-  ];
-  const PHRASES_MID = [
-    "Flush it.", "Find the center of the face.", "Pure strike, easy does it.", "Committed swing, soft grip.",
-    "Middle of the green is never a bad play.", "Take your medicine if you need to — smart beats bold.",
-    "Feed it in nice and controlled.", "This is a green-light shot — go get it.", "Keep it simple here.",
-    "Take dead aim and trust the number.", "Play the shot in front of you.", "Solid strike, let it fly.",
-    "This is a repeatable swing — just make it.", "Stay through the shot, don't bail early.",
-    "This yardage is right in your pocket.", "No hero shots — just a good, clean swing.",
-    "Take one more club and swing easy.", "This is exactly your kind of shot."
-  ];
-  function pickMotivation(distanceYards){
-    let pool;
-    if(distanceYards !== null && distanceYards >= 250) pool = PHRASES_LONG.concat(PHRASES_STEADY);
-    else if(distanceYards !== null && distanceYards < 100) pool = PHRASES_SHORT.concat(PHRASES_STEADY);
-    else pool = PHRASES_MID.concat(PHRASES_STEADY);
-    return pool[Math.floor(Math.random() * pool.length)];
+  function updatePersonaDesc(){
+    const desc = document.getElementById('personaDesc');
+    if(!desc) return;
+    const p = PERSONAS[selectedPersonaIdx];
+    const voices = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+    const voiceNote = voices.length
+      ? `Using ${Math.min(voices.length,10)} of your device's built-in voice${voices.length===1?'':'s'} — there's no free, safe way to add studio-quality cloud voices to a page like this without an API key that could rack up charges, so this sticks to what your phone already has for free.`
+      : `Voices haven't loaded from your device yet — tap "What do you got?" once to wake them up.`;
+    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. ${voiceNote}`;
   }
+  if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged = updatePersonaDesc; }
 
-  function renderCaddieRead(r){
-    const card = document.getElementById('caddieReadCard');
-    const body = document.getElementById('caddieReadBody');
-    if(!card || !body) return;
-    card.style.display = '';
-    let html = `<div class="caddie-teeshot">${HOLE1.teeShot}</div>`;
-    if(r.windLine) html += `<div class="map-caption" style="margin-top:6px;">${r.windLine}</div>`;
-    if(r.rawDist !== null){
-      const showsPlaying = Math.abs(r.adjustment) >= 1;
-      html += `<div class="caddie-club-row">
-        <div>
-          <div class="caddie-line-raw">${Math.round(r.rawDist)} to pin</div>
-          ${showsPlaying ? `<div class="caddie-line-raw">Plays ${Math.round(r.playingDist)}</div>` : ''}
-        </div>
-        ${r.club ? `<div class="caddie-club">${r.club[0]}</div>` : ''}
-      </div>`;
-      if(r.clubNote) html += `<div class="caddie-note">${r.clubNote}</div>`;
-      else if(!r.hasClubs) html += `<div class="map-caption" style="margin-top:6px;">Add your clubs in Options for a club call.</div>`;
-    } else {
-      html += `<div class="map-caption" style="margin-top:8px;">Set a pin, or enter a distance, for the full read.</div>`;
-    }
-    html += `<div class="caddie-note" style="margin-top:10px;">Best miss: ${HOLE1.bestMiss}. Avoid ${HOLE1.avoid}.</div>`;
-    body.innerHTML = html;
-  }
+  function updateCaddieRead(forceWindFetch){
+    (async () => {
+      await loadClubs();
+      await fetchWindIfDue(forceWindFetch);
+      const r = buildCaddieRead();
+      const body = document.getElementById('caddieReadBody');
+      if(!body) return;
 
-  function buildVoiceText(r){
-    let text = `${HOLE1.teeShot} `;
-    if(r.windLine) text += `${r.windLine} `;
-    if(r.rawDist !== null){
-      text += `${Math.round(r.rawDist)} to the pin. `;
-      if(Math.abs(r.adjustment) >= 1) text += `Plays ${Math.round(r.playingDist)}. `;
-      if(r.clubNote) text += `${r.clubNote} `;
-      else if(!r.hasClubs) text += `Add your clubs in Options and I'll give you a club too. `;
-    } else {
-      text += `Drop a pin or enter a distance for the full read. `;
-    }
-    text += `Best miss is ${HOLE1.bestMiss}. Avoid ${HOLE1.avoid}. `;
-    text += pickMotivation(r.rawDist) + ' ';
-    return text;
+      const f = factsFor(r);
+      let html = '';
+
+      html += `<div class="caddie-club-row">`;
+      html += `<div>`;
+      if(f.hasPin) html += `<div class="caddie-line-raw">${f.pin} to pin${f.showsPlaying?` <small>· plays ${f.pinPlaying}</small>`:''}</div>`;
+      if(f.hasTarget) html += `<div class="caddie-line-raw">${f.target} to target${f.showsPlaying?` <small>· plays ${f.targetPlaying}</small>`:''}</div>`;
+      if(!f.hasPin && !f.hasTarget) html += `<div class="caddie-line-raw">On the tee</div>`;
+      html += `</div>`;
+      html += f.club ? `<div class="caddie-club">${f.club}</div>` : '';
+      html += `</div>`;
+
+      if(f.tip) html += `<div class="caddie-note">${f.tip}</div>`;
+      if(!f.hasClubs) html += `<div class="map-caption" style="margin-top:6px;">Add your clubs in Options for a club call.</div>`;
+      if(f.windLine) html += `<div class="map-caption" style="margin-top:6px;">Wind: ${f.windLine}</div>`;
+
+      if(f.showGreen){
+        html += `<div class="fmb-row" style="margin-top:10px; border-top:1px dashed rgba(35,41,30,.14); padding-top:8px;"><span>Front</span><b>${f.green.front}y</b></div>`;
+        html += `<div class="fmb-row"><span>Middle</span><b>${f.green.middle}y</b></div>`;
+        html += `<div class="fmb-row"><span>Back</span><b>${f.green.back}y</b></div>`;
+      }
+      body.innerHTML = html;
+    })();
   }
 
   document.getElementById('readSummaryBtn').addEventListener('click', async () => {
@@ -1350,11 +1329,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       await loadClubs();
       await fetchWindIfDue(false);
       const r = buildCaddieRead();
-      renderCaddieRead(r);
+      updateCaddieRead(false);
 
       const idx = selectedPersonaIdx;
       const persona = PERSONAS[idx] || PERSONAS[0];
-      const text = persona.wrap(buildVoiceText(r));
+      const f = factsFor(r);
+      const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
 
       const utter = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
@@ -1374,7 +1354,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   (async function init(){
     try{ const res = await storageAPI.get('app:selectedTee'); if(res && res.value) selectedTee = res.value; }catch(e){}
     try{ const res = await storageAPI.get('app:personaIndex'); if(res && res.value) selectedPersonaIdx = parseInt(res.value,10) || 0; }catch(e){}
-    try{ const res = await storageAPI.get('hole1:lzOverride'); if(res && res.value) lzOverride = parseInt(res.value,10); }catch(e){}
     try{ const res = await storageAPI.get('ui:collapsed'); if(res && res.value) collapsedState = JSON.parse(res.value); }catch(e){}
 
     applyCollapsedState();

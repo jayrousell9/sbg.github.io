@@ -163,6 +163,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   .compass-wrap{ display:flex; justify-content:center; padding:6px 0; }
   .compass-rose{ width:180px; height:180px; }
+  .wind-panel{ display:flex; align-items:center; gap:18px; }
+  .compass-rose-sm{ width:120px; height:120px; flex-shrink:0; }
+  .wind-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .wind-speed-line{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-xbold); font-size:24px; letter-spacing:-0.01em; color:var(--ink); line-height:1.1; }
+  .wind-club-line{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:20px; color:var(--flag); }
   .wind-readout{ text-align:center; font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:22px; letter-spacing:-0.01em; color:var(--ink); margin-top:4px; }
   .wind-readout small{ font-family:'Urbanist',sans-serif; font-size:12px; font-weight:400; color:var(--ink-soft); }
   select.voice-select{ flex:1; font-family:'Urbanist',sans-serif; font-size:12px; padding:9px 8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
@@ -286,29 +291,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card" data-collapse-key="wind">
       <div class="section-label"><span class="label-title">Wind compass <span class="est-badge live-badge">Live</span></span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
-        <div class="compass-wrap">
-          <svg class="compass-rose" id="compassRose" viewBox="0 0 200 200">
-            <circle cx="100" cy="100" r="92" fill="#F3F5EC" stroke="rgba(35,41,30,.2)" stroke-width="2"/>
-            <text x="100" y="24" font-family="Urbanist, sans-serif" font-size="14" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
-            <text x="176" y="105" font-family="Urbanist, sans-serif" font-size="12" fill="#57604C" text-anchor="middle">E</text>
-            <text x="100" y="186" font-family="Urbanist, sans-serif" font-size="12" fill="#57604C" text-anchor="middle">S</text>
-            <text x="24" y="105" font-family="Urbanist, sans-serif" font-size="12" fill="#57604C" text-anchor="middle">W</text>
-            <!-- heading needle: shows which way YOU are facing. Thin, muted, separate from the wind arrow on purpose. -->
-            <g id="headingNeedleGroup" transform="rotate(0 100 100)" style="opacity:0; transition:opacity .3s;">
-              <line x1="100" y1="100" x2="100" y2="46" stroke="#6E8E88" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/>
+        <div class="wind-panel">
+          <svg class="compass-rose-sm" id="compassRose" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="64" fill="#F3F5EC" stroke="rgba(35,41,30,.2)" stroke-width="2"/>
+            <g id="roseGroup">
+              <text x="70" y="20" font-family="Urbanist, sans-serif" font-size="13" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
+              <text x="120" y="75" font-family="Urbanist, sans-serif" font-size="11" fill="#57604C" text-anchor="middle">E</text>
+              <text x="70" y="126" font-family="Urbanist, sans-serif" font-size="11" fill="#57604C" text-anchor="middle">S</text>
+              <text x="20" y="75" font-family="Urbanist, sans-serif" font-size="11" fill="#57604C" text-anchor="middle">W</text>
             </g>
-            <!-- wind arrow: rotation is ALWAYS the raw compass bearing wind is coming FROM. It never
-                 inherits or combines with heading/rose rotation — it only moves when the wind reading changes. -->
-            <g id="windArrowGroup" transform="rotate(0 100 100)" style="opacity:0; transition:opacity .3s;">
-              <line x1="100" y1="100" x2="100" y2="35" stroke="#7C6A40" stroke-width="4" stroke-linecap="round"/>
-              <path d="M100 26 L112 46 L88 46 Z" fill="#7C6A40"/>
+            <!-- wind arrow rotation = windDir - heading, so it stays pointed at the true wind
+                 direction on screen as the rose (and you) turn. -->
+            <g id="windArrowGroup" transform="rotate(0 70 70)" style="opacity:0; transition:opacity .3s;">
+              <line x1="70" y1="70" x2="70" y2="30" stroke="#7C6A40" stroke-width="5" stroke-linecap="round"/>
+              <path d="M70 22 L82 40 L58 40 Z" fill="#7C6A40"/>
             </g>
-            <circle cx="100" cy="100" r="4" fill="#23291E"/>
+            <circle cx="70" cy="70" r="4" fill="#23291E"/>
           </svg>
+          <div class="wind-text">
+            <div class="wind-speed-line" id="windSpeedLine">— km/h —</div>
+            <div class="wind-club-line" id="windClubLine">—</div>
+          </div>
         </div>
-        <div class="map-caption" id="headingCaption" style="text-align:center; margin-top:2px;"></div>
-        <div class="wind-readout" id="windReadout">— km/h — · —°</div>
-        <div class="map-caption" id="windCompassInfo" style="text-align:center;">Turn on "Enable compass" in Options so the rose turns with your phone.</div>
+        <div class="map-caption" id="windCompassInfo" style="text-align:center; margin-top:8px;">Turn on "Enable compass" in Options so the rose turns with your phone.</div>
         <div style="display:flex; justify-content:center; margin-top:8px;">
           <button class="action-btn secondary" id="refreshWindBtn">Refresh wind</button>
         </div>
@@ -872,38 +877,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   let currentHeading = 0, currentWindDir = null, windSpeedVal = null, windTempVal = null;
 
   function renderCompass(){
-    // Wind arrow rotation is ALWAYS just the raw wind bearing — completely independent of
-    // device heading. It only moves when the wind reading itself changes.
+    // Rose (N/E/S/W labels) rotates with your device heading — "the compass moves as the
+    // phone rotates." The wind arrow's rotation is windDir - heading, so it keeps pointing
+    // at the true wind direction on screen no matter which way you turn.
+    const roseGroup = document.getElementById('roseGroup');
+    if(roseGroup) roseGroup.setAttribute('transform', `rotate(${-currentHeading} 70 70)`);
+
     const windArrowGroup = document.getElementById('windArrowGroup');
     if(windArrowGroup && currentWindDir!==null){
-      windArrowGroup.setAttribute('transform', `rotate(${currentWindDir} 100 100)`);
+      const rel = (currentWindDir - currentHeading + 360) % 360;
+      windArrowGroup.setAttribute('transform', `rotate(${rel} 70 70)`);
       windArrowGroup.style.opacity = 1;
     }
-    // Heading needle is a separate element showing which way YOU'RE facing — it never
-    // touches the wind arrow's transform.
-    const headingNeedleGroup = document.getElementById('headingNeedleGroup');
-    const headingCaption = document.getElementById('headingCaption');
-    if(headingNeedleGroup){
-      if(currentHeading !== null && compassEnabled){
-        headingNeedleGroup.setAttribute('transform', `rotate(${currentHeading} 100 100)`);
-        headingNeedleGroup.style.opacity = 1;
-        if(headingCaption) headingCaption.textContent = `Facing ${compass(currentHeading)}`;
-      } else {
-        headingNeedleGroup.style.opacity = 0;
-        if(headingCaption) headingCaption.textContent = '';
-      }
+
+    const speedLine = document.getElementById('windSpeedLine');
+    if(speedLine){
+      speedLine.textContent = currentWindDir!==null
+        ? `${Math.round(windSpeedVal)} km/h ${compass(currentWindDir)}`
+        : '— km/h —';
     }
+    const clubLine = document.getElementById('windClubLine');
+    if(clubLine){
+      const delta = windClubDelta();
+      if(delta === null) clubLine.textContent = currentWindDir!==null ? 'Set a pin for club impact' : '—';
+      else if(delta === 0) clubLine.textContent = 'No club change';
+      else clubLine.textContent = `${delta > 0 ? '+' : ''}${delta} club${Math.abs(delta)>1?'s':''}`;
+    }
+
     const info = document.getElementById('windCompassInfo');
-    const readout = document.getElementById('windReadout');
-    if(readout){
-      readout.innerHTML = currentWindDir!==null
-        ? `${Math.round(windSpeedVal)} km/h <small>from</small> ${compass(currentWindDir)} <small>(${Math.round(currentWindDir)}°)</small>`
-        : '— km/h <small>·</small> —';
-    }
     if(info){
       let txt = '';
       if(windTempVal!==null) txt += `${Math.round(windTempVal)}°F`;
-      if(!txt) txt = 'Tap "Refresh wind" for current conditions. Wind arrow always points to true wind direction, regardless of which way you\'re facing.';
+      if(!compassEnabled) txt += (txt?' · ':'') + 'Enable compass in Options so the rose turns with your phone.';
+      if(!txt) txt = 'Tap "Refresh wind" for current conditions.';
       info.textContent = txt;
     }
   }
@@ -1025,46 +1031,81 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }catch(e){ /* wind optional */ }
   }
 
-  function buildCaddieRead(){
+  // Shared by the Caddie Read engine AND the wind-compass club-delta widget — one
+  // definition of "what are we aiming at" and "what's the wind doing to this shot."
+  function currentShotBearing(){
+    if(userMarker && targetMarker){ const u=userMarker.getLatLng(), t=targetMarker.getLatLng(); return bearingDeg(u.lat,u.lng,t.lat,t.lng); }
+    if(userMarker && pinMarker){ const u=userMarker.getLatLng(), p=pinMarker.getLatLng(); return bearingDeg(u.lat,u.lng,p.lat,p.lng); }
+    return null;
+  }
+  function windComponentKmh(shotBearingDeg){
+    if(!cachedWind || shotBearingDeg===null) return 0;
+    return cachedWind.wind_speed_10m * Math.cos(toRad(cachedWind.wind_direction_10m - shotBearingDeg));
+  }
+  // Headwind hurts more than tailwind helps — this is the one place that asymmetry is applied.
+  function windAdjustmentYards(shotBearingDeg){
+    const comp = windComponentKmh(shotBearingDeg);
+    const compMph = comp * 0.621371;
+    return compMph > 0 ? compMph : compMph * 0.5;
+  }
+  // "+1 club" style indicator: roughly 1 club per 15-20 km/h of headwind, tailwind dampened,
+  // crosswind treated as negligible for club selection (it's an aim adjustment, not a club one).
+  // When real club-bag data exists, this instead measures the actual club-gap difference
+  // between the raw-distance pick and the wind-adjusted pick — more accurate than the rule
+  // of thumb, and guaranteed to agree with the main Recommended Club, since it's derived
+  // from the exact same numbers.
+  function windClubDelta(){
+    if(!cachedWind) return null;
+    const bearing = currentShotBearing();
+    if(bearing === null) return null;
+    const comp = windComponentKmh(bearing);
+    const adjustment = windAdjustmentYards(bearing);
+    const bagEntries = Object.entries(clubBag);
+    if(bagEntries.length >= 2){
+      const recDist = currentRecDistance().recDist;
+      const sortedDesc = [...bagEntries].sort((a,b)=>b[1]-a[1]);
+      const idxOf = (name) => sortedDesc.findIndex(e=>e[0]===name);
+      const rawClub = pickClub(clubBag, recDist);
+      const windClub = pickClub(clubBag, recDist + adjustment);
+      return idxOf(rawClub[0]) - idxOf(windClub[0]);
+    }
+    if(Math.abs(comp) < 5) return 0; // crosswind or negligible — adjust aim, not club
+    return comp > 0 ? Math.round(comp / 17.5) : -Math.round(Math.abs(comp) / 30);
+  }
+
+  function currentRecDistance(){
     const hasUser = !!userMarker, hasPinMarker = !!pinMarker, hasTargetMarker = !!targetMarker;
     let pinDist = null;
     if(hasUser && hasPinMarker){
       const u=userMarker.getLatLng(), p=pinMarker.getLatLng();
       pinDist = haversineYards(u.lat,u.lng,p.lat,p.lng);
     } else if(pinInputEl && pinInputEl.dataset.touched && pinInputEl.value){
-      pinDist = parseFloat(pinInputEl.value); // manual override — only counts once the golfer has actually entered something
+      pinDist = parseFloat(pinInputEl.value);
     }
     let targetDist = null;
     if(hasUser && hasTargetMarker){
       const u=userMarker.getLatLng(), t=targetMarker.getLatLng();
       targetDist = haversineYards(u.lat,u.lng,t.lat,t.lng);
     }
-
     const tee = TEES.find(t => t.key===selectedTee);
     const teeTotal = tee.yards[1];
-
-    // Recommendation always follows whatever you're actually aiming at right now:
-    // Target if you've set one (that's your next shot), otherwise the pin, otherwise
-    // — nothing dropped yet — assume you're on the tee playing the full hole.
     let recDist, phase;
     if(targetDist !== null){ recDist = targetDist; phase = 'approach'; }
     else if(pinDist !== null){ recDist = pinDist; phase = 'approach'; }
     else { recDist = teeTotal; phase = 'tee'; }
+    return { recDist, phase, pinDist, targetDist };
+  }
 
-    let shotBearingDeg = null;
-    if(hasUser && hasTargetMarker){ const u=userMarker.getLatLng(), t=targetMarker.getLatLng(); shotBearingDeg = bearingDeg(u.lat,u.lng,t.lat,t.lng); }
-    else if(hasUser && hasPinMarker){ const u=userMarker.getLatLng(), p=pinMarker.getLatLng(); shotBearingDeg = bearingDeg(u.lat,u.lng,p.lat,p.lng); }
+  function buildCaddieRead(){
+    const { recDist, phase, pinDist, targetDist } = currentRecDistance();
+    const shotBearingDeg = currentShotBearing();
 
-    let windLine = null, adjustment = 0;
+    let windLine = null;
+    const adjustment = windAdjustmentYards(shotBearingDeg);
     if(cachedWind){
-      if(shotBearingDeg !== null){
-        const windComponent = cachedWind.wind_speed_10m * Math.cos(toRad(cachedWind.wind_direction_10m - shotBearingDeg));
-        const speedMphComponent = windComponent * 0.621371; // rule-of-thumb calibrated per mph
-        adjustment = speedMphComponent > 0 ? speedMphComponent : speedMphComponent * 0.5; // headwind hurts more than tailwind helps
-        windLine = `${Math.round(cachedWind.wind_speed_10m)} km/h ${windRelativeDescription(shotBearingDeg, cachedWind.wind_direction_10m)}`;
-      } else {
-        windLine = `${Math.round(cachedWind.wind_speed_10m)} km/h from ${compass(cachedWind.wind_direction_10m)}`;
-      }
+      windLine = shotBearingDeg !== null
+        ? `${Math.round(cachedWind.wind_speed_10m)} km/h ${windRelativeDescription(shotBearingDeg, cachedWind.wind_direction_10m)}`
+        : `${Math.round(cachedWind.wind_speed_10m)} km/h from ${compass(cachedWind.wind_direction_10m)}`;
     }
 
     const playingDist = recDist + adjustment;

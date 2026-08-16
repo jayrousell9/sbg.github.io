@@ -163,11 +163,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   .compass-wrap{ display:flex; justify-content:center; padding:6px 0; }
   .compass-rose{ width:180px; height:180px; }
-  .wind-panel{ display:flex; align-items:center; gap:18px; }
-  .compass-rose-sm{ width:120px; height:120px; flex-shrink:0; }
-  .wind-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:8px; }
-  .wind-speed-line{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-xbold); font-size:24px; letter-spacing:-0.01em; color:var(--ink); line-height:1.1; }
-  .wind-club-line{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:20px; color:var(--flag); }
+  .wind-simple{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; }
+  .wind-arrow-svg{ width:130px; height:130px; }
+  .wind-simple-line{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-xbold); font-size:22px; letter-spacing:-0.01em; color:var(--ink); }
+  .wind-simple-sub{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:16px; color:var(--flag); }
   .wind-readout{ text-align:center; font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:22px; letter-spacing:-0.01em; color:var(--ink); margin-top:4px; }
   .wind-readout small{ font-family:'Urbanist',sans-serif; font-size:12px; font-weight:400; color:var(--ink-soft); }
   select.voice-select{ flex:1; font-family:'Urbanist',sans-serif; font-size:12px; padding:9px 8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
@@ -233,8 +232,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
     </div>
     <div class="caddie-card">
-      <div id="currentPersonaLabel">Caddie: Loading…</div>
-      <button class="action-btn" id="readSummaryBtn" style="width:100%; margin-top:8px;">What do you got?</button>
+      <button class="action-btn" id="readSummaryBtn" style="width:100%;">Give me the read</button>
     </div>
   </div>
 
@@ -243,12 +241,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card" id="caddieReadCard" data-collapse-key="caddieread">
       <div class="section-label"><span class="label-title">Caddie Read</span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
-        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-          <span style="font-family:'Urbanist',sans-serif; font-size:11px; color:var(--ink-soft);">Distance to pin</span>
-          <input type="number" inputmode="numeric" id="pinDistanceInput" min="0" max="600" style="width:80px; font-family:'Urbanist',sans-serif; font-size:15px; font-weight:700; text-align:center; padding:7px; border-radius:8px; border:1px solid rgba(35,41,30,.25); background:#F3F5EC; color:var(--ink);">
-          <span style="font-family:'Urbanist',sans-serif; font-size:11px; color:var(--ink-soft);">yd</span>
-          <span class="map-caption" style="margin-left:auto; text-align:right;">auto-fills once you drop a pin</span>
-        </div>
         <div id="caddieReadBody"></div>
       </div>
     </div>
@@ -263,12 +255,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div id="golfMap"></div>
         <div class="map-caption" id="locHint" style="margin-top:8px;">Turn on "Use my location" in Options to get live distances here.</div>
-
-        <div class="live-stats" id="liveStats" style="display:none;">
-          <div class="live-stat"><div class="k">To pin</div><div class="v" id="stat-pin">—</div></div>
-          <div class="live-stat"><div class="k">To target</div><div class="v" id="stat-target">—</div></div>
-          <div class="live-stat"><div class="k">Target→front</div><div class="v" id="stat-target-front">—</div></div>
-        </div>
 
         <button class="details-toggle" type="button" data-details="pintarget">Details</button>
         <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. With "Use my location" on in Options, your position comes from GPS automatically. Turn it off to plan a hole before you arrive — a "My Location" option appears above so you can drop yourself anywhere on the map and get the same distances and club recommendation you'd get on the course. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically.</div>
@@ -291,29 +277,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card" data-collapse-key="wind">
       <div class="section-label"><span class="label-title">Wind compass <span class="est-badge live-badge">Live</span></span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
-        <div class="wind-panel">
-          <svg class="compass-rose-sm" id="compassRose" viewBox="0 0 140 140">
-            <circle cx="70" cy="70" r="64" fill="#F3F5EC" stroke="rgba(35,41,30,.2)" stroke-width="2"/>
-            <g id="roseGroup">
-              <text x="70" y="20" font-family="Urbanist, sans-serif" font-size="13" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
-              <text x="120" y="75" font-family="Urbanist, sans-serif" font-size="11" fill="#57604C" text-anchor="middle">E</text>
-              <text x="70" y="126" font-family="Urbanist, sans-serif" font-size="11" fill="#57604C" text-anchor="middle">S</text>
-              <text x="20" y="75" font-family="Urbanist, sans-serif" font-size="11" fill="#57604C" text-anchor="middle">W</text>
-            </g>
-            <!-- wind arrow rotation = windDir - heading, so it stays pointed at the true wind
-                 direction on screen as the rose (and you) turn. -->
-            <g id="windArrowGroup" transform="rotate(0 70 70)" style="opacity:0; transition:opacity .3s;">
-              <line x1="70" y1="70" x2="70" y2="30" stroke="#7C6A40" stroke-width="5" stroke-linecap="round"/>
-              <path d="M70 22 L82 40 L58 40 Z" fill="#7C6A40"/>
+        <div class="wind-simple">
+          <svg class="wind-arrow-svg" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="64" fill="#F3F5EC" stroke="rgba(35,41,30,.15)" stroke-width="2"/>
+            <!-- Rotation = windDir - heading. This is the ONLY thing that moves with the phone;
+                 the wind direction itself only changes when a new reading is fetched. -->
+            <g id="windArrowGroup" transform="rotate(0 70 70)" style="opacity:0;">
+              <line x1="70" y1="70" x2="70" y2="26" stroke="#7C6A40" stroke-width="6" stroke-linecap="round"/>
+              <path d="M70 16 L86 38 L54 38 Z" fill="#7C6A40"/>
             </g>
             <circle cx="70" cy="70" r="4" fill="#23291E"/>
           </svg>
-          <div class="wind-text">
-            <div class="wind-speed-line" id="windSpeedLine">— km/h —</div>
-            <div class="wind-club-line" id="windClubLine">—</div>
-          </div>
+          <div class="wind-simple-line" id="windSpeedLine">— km/h FROM —</div>
+          <div class="wind-simple-sub" id="windClubLine">—</div>
         </div>
-        <div class="map-caption" id="windCompassInfo" style="text-align:center; margin-top:8px;">Turn on "Enable compass" in Options so the rose turns with your phone.</div>
+        <div class="map-caption" id="windCompassInfo" style="text-align:center; margin-top:8px;">Turn on "Enable compass" in Options so the arrow stays locked to the real wind direction as you turn.</div>
         <div style="display:flex; justify-content:center; margin-top:8px;">
           <button class="action-btn secondary" id="refreshWindBtn">Refresh wind</button>
         </div>
@@ -513,9 +491,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       teeColorChip.style.color = tee.textOn || '#fff';
       teeColorChip.style.border = tee.border ? `1px solid ${tee.border}` : 'none';
     }
-
-    const pinInput = document.getElementById('pinDistanceInput');
-    if(pinInput && !pinInput.dataset.touched && !(userMarker && pinMarker)) pinInput.value = tee.yards[1];
 
     if(userMarker && pinMarker) updateObstacleTracking();
     updateCaddieRead(false);
@@ -774,40 +749,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function recalcLiveStats(){
-    const statsWrap = document.getElementById('liveStats');
-    const statPin = document.getElementById('stat-pin');
-    const statTarget = document.getElementById('stat-target');
-    const statTargetFront = document.getElementById('stat-target-front');
     const locHint = document.getElementById('locHint');
     updateObstacleTracking();
     if(!userMarker || !pinMarker){
-      if(statsWrap) statsWrap.style.display='none';
       if(locHint) locHint.style.display = userMarker ? 'none' : '';
       updateCaddieRead(false);
       return;
     }
     if(locHint) locHint.style.display = 'none';
-    const u = userMarker.getLatLng(), p = pinMarker.getLatLng();
-    const dPin = haversineYards(u.lat,u.lng,p.lat,p.lng);
-    statPin.innerHTML = YD_FMT(dPin);
-    if(targetMarker){
-      const t = targetMarker.getLatLng();
-      const dTarget = haversineYards(u.lat,u.lng,t.lat,t.lng);
-      const dTargetToPin = haversineYards(t.lat,t.lng,p.lat,p.lng);
-      const leftToFront = Math.max(dTargetToPin - GREEN_HALF_DEPTH, 0);
-      statTarget.innerHTML = `${YD_FMT(dTarget)}<br><small>leaves ${YD_FMT(dTargetToPin)}</small>`;
-      statTargetFront.innerHTML = dTargetToPin <= GREEN_HALF_DEPTH ? '<small>past front</small>' : YD_FMT(leftToFront);
-    } else {
-      statTarget.innerHTML = '<small>not set</small>';
-      statTargetFront.innerHTML = '<small>—</small>';
-    }
-    statsWrap.style.display = 'flex';
-
-    if(pinInputEl){
-      pinInputEl.value = Math.round(dPin);
-      pinInputEl.dataset.touched = '1';
-    }
-
     updateCaddieRead(true);
   }
 
@@ -877,12 +826,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   let currentHeading = 0, currentWindDir = null, windSpeedVal = null, windTempVal = null;
 
   function renderCompass(){
-    // Rose (N/E/S/W labels) rotates with your device heading — "the compass moves as the
-    // phone rotates." The wind arrow's rotation is windDir - heading, so it keeps pointing
-    // at the true wind direction on screen no matter which way you turn.
-    const roseGroup = document.getElementById('roseGroup');
-    if(roseGroup) roseGroup.setAttribute('transform', `rotate(${-currentHeading} 70 70)`);
-
+    // The arrow's rotation is windDir - heading. Wind direction only changes when a new
+    // reading is fetched; the phone's heading is the only other input, so as you rotate,
+    // the arrow visually counter-rotates just enough to keep pointing at the same real-world
+    // direction — it never rotates because of movement or spinning the phone on its own.
     const windArrowGroup = document.getElementById('windArrowGroup');
     if(windArrowGroup && currentWindDir!==null){
       const rel = (currentWindDir - currentHeading + 360) % 360;
@@ -893,8 +840,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const speedLine = document.getElementById('windSpeedLine');
     if(speedLine){
       speedLine.textContent = currentWindDir!==null
-        ? `${Math.round(windSpeedVal)} km/h ${compass(currentWindDir)}`
-        : '— km/h —';
+        ? `${Math.round(windSpeedVal)} km/h FROM ${compass(currentWindDir)}`
+        : '— km/h FROM —';
     }
     const clubLine = document.getElementById('windClubLine');
     if(clubLine){
@@ -908,7 +855,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(info){
       let txt = '';
       if(windTempVal!==null) txt += `${Math.round(windTempVal)}°F`;
-      if(!compassEnabled) txt += (txt?' · ':'') + 'Enable compass in Options so the rose turns with your phone.';
+      if(!compassEnabled) txt += (txt?' · ':'') + 'Enable compass in Options so the arrow stays locked to the real direction as you turn.';
       if(!txt) txt = 'Tap "Refresh wind" for current conditions.';
       info.textContent = txt;
     }
@@ -1001,14 +948,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return diff > 0 ? 'off the right' : 'off the left';
   }
 
-  const pinInputEl = document.getElementById('pinDistanceInput');
-  let planDebounce;
-  pinInputEl.addEventListener('input', () => {
-    pinInputEl.dataset.touched = '1';
-    clearTimeout(planDebounce);
-    planDebounce = setTimeout(() => updateCaddieRead(false), 500);
-  });
-
   function shouldFetchWind(force){
     if(!locationEnabled) return false;
     if(force) return true;
@@ -1079,13 +1018,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(hasUser && hasPinMarker){
       const u=userMarker.getLatLng(), p=pinMarker.getLatLng();
       pinDist = haversineYards(u.lat,u.lng,p.lat,p.lng);
-    } else if(pinInputEl && pinInputEl.dataset.touched && pinInputEl.value){
-      pinDist = parseFloat(pinInputEl.value);
     }
     let targetDist = null;
     if(hasUser && hasTargetMarker){
       const u=userMarker.getLatLng(), t=targetMarker.getLatLng();
       targetDist = haversineYards(u.lat,u.lng,t.lat,t.lng);
+    }
+    let targetToPinDist = null;
+    if(hasPinMarker && hasTargetMarker){
+      const t=targetMarker.getLatLng(), p=pinMarker.getLatLng();
+      targetToPinDist = haversineYards(t.lat,t.lng,p.lat,p.lng);
     }
     const tee = TEES.find(t => t.key===selectedTee);
     const teeTotal = tee.yards[1];
@@ -1093,11 +1035,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(targetDist !== null){ recDist = targetDist; phase = 'approach'; }
     else if(pinDist !== null){ recDist = pinDist; phase = 'approach'; }
     else { recDist = teeTotal; phase = 'tee'; }
-    return { recDist, phase, pinDist, targetDist };
+    return { recDist, phase, pinDist, targetDist, targetToPinDist };
   }
 
   function buildCaddieRead(){
-    const { recDist, phase, pinDist, targetDist } = currentRecDistance();
+    const { recDist, phase, pinDist, targetDist, targetToPinDist } = currentRecDistance();
     const shotBearingDeg = currentShotBearing();
 
     let windLine = null;
@@ -1122,6 +1064,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       phase, tip, hasClubs, club, clubNote, windLine, adjustment,
       hasTarget: targetDist !== null, targetDist, targetPlaying: targetDist!==null ? targetDist+adjustment : null,
       hasPin: pinDist !== null, pinDist, pinPlaying: pinDist!==null ? pinDist+adjustment : null,
+      hasTargetToPin: targetToPinDist !== null, targetToPinDist, targetToPinPlaying: targetToPinDist!==null ? targetToPinDist+adjustment : null,
       showGreen, green
     };
   }
@@ -1196,6 +1139,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       tip: r.tip, windLine: r.windLine, showsPlaying,
       hasTarget: r.hasTarget, target: r.targetDist!==null ? Math.round(r.targetDist) : null, targetPlaying: r.targetPlaying!==null ? Math.round(r.targetPlaying) : null,
       hasPin: r.hasPin, pin: r.pinDist!==null ? Math.round(r.pinDist) : null, pinPlaying: r.pinPlaying!==null ? Math.round(r.pinPlaying) : null,
+      hasTargetToPin: r.hasTargetToPin, targetToPin: r.targetToPinDist!==null ? Math.round(r.targetToPinDist) : null, targetToPinPlaying: r.targetToPinPlaying!==null ? Math.round(r.targetToPinPlaying) : null,
       showGreen: r.showGreen, green: r.green ? {front:Math.round(r.green.front), middle:Math.round(r.green.middle), back:Math.round(r.green.back)} : null
     };
   }
@@ -1306,11 +1250,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const desc = document.getElementById('personaDesc');
     if(!desc) return;
     const p = PERSONAS[selectedPersonaIdx];
-    const voices = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
-    const voiceNote = voices.length
-      ? `Using ${Math.min(voices.length,10)} of your device's built-in voice${voices.length===1?'':'s'} — there's no free, safe way to add studio-quality cloud voices to a page like this without an API key that could rack up charges, so this sticks to what your phone already has for free.`
-      : `Voices haven't loaded from your device yet — tap "What do you got?" once to wake them up.`;
-    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. ${voiceNote}`;
+    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. All five personalities speak in the same voice — only the wording changes between them.`;
   }
   if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged = updatePersonaDesc; }
 
@@ -1329,6 +1269,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       html += `<div>`;
       if(f.hasPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.pin}y</span> to pin${f.showsPlaying?` — plays <span class="num-strong">${f.pinPlaying}y</span>`:''}</div>`;
       if(f.hasTarget) html += `<div class="caddie-line-raw"><span class="num-strong">${f.target}y</span> to target${f.showsPlaying?` — plays <span class="num-strong">${f.targetPlaying}y</span>`:''}</div>`;
+      if(f.hasTargetToPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.targetToPin}y</span> target to pin${f.showsPlaying?` — plays <span class="num-strong">${f.targetToPinPlaying}y</span>`:''}</div>`;
       if(!f.hasPin && !f.hasTarget) html += `<div class="caddie-line-raw">On the tee</div>`;
       html += `</div>`;
       html += f.club ? `<div class="caddie-club">${f.club}</div>` : '';
@@ -1339,7 +1280,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(f.windLine) html += `<div class="map-caption" style="margin-top:6px;">Wind: ${f.windLine}</div>`;
 
       if(f.showGreen){
-        html += `<div class="fmb-row" style="margin-top:10px; border-top:1px dashed rgba(35,41,30,.14); padding-top:8px;"><span>Front</span><b>${f.green.front}y</b></div>`;
+        html += `<div class="map-caption" style="margin-top:10px; border-top:1px dashed rgba(35,41,30,.14); padding-top:8px; font-weight:var(--fw-medium);">Green distance</div>`;
+        html += `<div class="fmb-row"><span>Front</span><b>${f.green.front}y</b></div>`;
         html += `<div class="fmb-row"><span>Middle</span><b>${f.green.middle}y</b></div>`;
         html += `<div class="fmb-row"><span>Back</span><b>${f.green.back}y</b></div>`;
       }
@@ -1362,17 +1304,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const f = factsFor(r);
       const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
 
+      // Wording still varies by persona (item 11's architecture) — but the voice itself
+      // is locked to a single one (Southern's settings) across all five, per request.
+      const voiceSource = PERSONAS[0];
       const utter = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();
-      if(voices.length) utter.voice = voices[idx % voices.length];
-      utter.rate = persona.rate;
-      utter.pitch = persona.pitch;
+      if(voices.length) utter.voice = voices[0];
+      utter.rate = voiceSource.rate;
+      utter.pitch = voiceSource.pitch;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utter);
     }catch(e){
       alert('Could not read summary: ' + e.message);
     }finally{
-      btn.disabled = false; btn.textContent = 'What do you got?';
+      btn.disabled = false; btn.textContent = 'Give me the read';
     }
   });
 

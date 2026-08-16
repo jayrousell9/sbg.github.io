@@ -16,18 +16,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Wooden Sticks — Caddie Book</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Space+Mono:wght@400;700&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root{
     --fairway:#37432F; --fairway-deep:#1E251C; --parchment:#EDEFE5; --parchment-dim:#DCE0D0;
     --wood:#7E8568; --flag:#7C6A40; --slope:#6E8E88; --ink:#23291E; --ink-soft:#57604C;
+    /* Urbanist weight scale, used intentionally rather than uniformly:
+       300 supporting/help text · 400 body · 500 nav/secondary buttons/labels
+       600 primary buttons/key values/section headings · 700 major headings/important numbers
+       800 hero treatment only, used sparingly (hole number) */
+    --fw-light:300; --fw-regular:400; --fw-medium:500; --fw-semibold:600; --fw-bold:700; --fw-xbold:800;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;background:var(--fairway-deep);}
   body{
-    font-family:'Public Sans',sans-serif; color:var(--ink); min-height:100vh;
+    font-family:'Urbanist',sans-serif; font-weight:var(--fw-regular); color:var(--ink); min-height:100vh;
     display:flex; flex-direction:column; align-items:center;
     background:radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.05), transparent 60%),
                linear-gradient(180deg, var(--fairway) 0%, var(--fairway-deep) 100%);
@@ -43,28 +48,28 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     box-shadow:0 10px 18px -10px rgba(0,0,0,.45);
   }
   .header-row{ display:flex; align-items:flex-start; justify-content:space-between; color:var(--parchment); }
-  .header-row .brand{ font-family:'Fraunces',serif; font-weight:700; font-size:19px; }
-  .header-row .brand small{ display:block; font-family:'Space Mono',monospace; font-weight:400; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--parchment-dim); opacity:.7; margin-top:2px; }
+  .header-row .brand{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:19px; letter-spacing:-0.01em; }
+  .header-row .brand small{ display:block; font-family:'Urbanist',sans-serif; font-weight:400; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--parchment-dim); opacity:.7; margin-top:2px; }
   .clubs-btn{
-    font-family:'Space Mono',monospace; font-size:10.5px; color:var(--parchment);
+    font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:10.5px; color:var(--parchment);
     background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
     border-radius:20px; padding:5px 10px; cursor:pointer; white-space:nowrap;
   }
   .clubs-btn:active{ background:rgba(255,255,255,.16); }
 
   .hole-strip{ display:flex; align-items:center; gap:12px; }
-  .hole-num-sm{ font-family:'Fraunces',serif; font-weight:700; font-size:32px; line-height:1; color:var(--parchment); flex-shrink:0; }
+  .hole-num-sm{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-xbold); font-size:32px; line-height:1; letter-spacing:-0.02em; color:var(--parchment); flex-shrink:0; }
   .hole-meta-sm{ flex:1; min-width:0; }
-  .hole-name-sm{ font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--parchment); line-height:1.3; }
-  .hole-tag-sm{ font-family:'Public Sans',sans-serif; font-weight:400; font-style:italic; font-size:11px; color:var(--parchment-dim); opacity:.8; }
+  .hole-name-sm{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-semibold); font-size:15px; color:var(--parchment); line-height:1.3; }
+  .hole-tag-sm{ font-family:'Urbanist',sans-serif; font-weight:400; font-style:italic; font-size:11px; color:var(--parchment-dim); opacity:.8; }
   .chips{ display:flex; gap:6px; margin-top:5px; flex-wrap:wrap; }
-  .chip{ font-family:'Space Mono',monospace; font-size:11px; padding:3px 8px; border-radius:20px; letter-spacing:.03em; background:rgba(255,255,255,.14); color:var(--parchment); }
-  .chip.big{ font-weight:700; background:var(--flag); color:#fff; }
+  .chip{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:11px; padding:3px 8px; border-radius:20px; letter-spacing:.02em; background:rgba(255,255,255,.14); color:var(--parchment); }
+  .chip.big{ font-weight:var(--fw-bold); letter-spacing:-0.01em; background:var(--flag); color:#fff; }
 
   .caddie-card{ background:var(--parchment); border-radius:14px; padding:12px 16px; box-shadow:0 8px 24px rgba(0,0,0,.28); }
-  #currentPersonaLabel{ font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--ink); }
-  .action-btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; font-family:'Space Mono',monospace; font-size:12px; background:var(--fairway); color:var(--parchment); border:none; border-radius:20px; padding:9px 14px; cursor:pointer; margin-top:6px; margin-right:6px; }
-  .action-btn.secondary{ background:var(--wood); }
+  #currentPersonaLabel{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-semibold); font-size:15px; color:var(--ink); }
+  .action-btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; font-family:'Urbanist',sans-serif; font-weight:var(--fw-semibold); font-size:12px; background:var(--fairway); color:var(--parchment); border:none; border-radius:20px; padding:9px 14px; cursor:pointer; margin-top:6px; margin-right:6px; }
+  .action-btn.secondary{ font-weight:var(--fw-medium); background:var(--wood); }
   .action-btn:active{ opacity:.85; }
   .action-btn:disabled{ opacity:.45; }
 
@@ -74,45 +79,47 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .card.collapsed .card-body{ display:none; }
 
   .section-label{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
-  .section-label .label-title{ font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); }
-  .toggle-text{ flex-shrink:0; font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:3px 9px; cursor:pointer; }
+  .section-label .label-title{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-semibold); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); }
+  .toggle-text{ flex-shrink:0; font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:3px 9px; cursor:pointer; }
   .toggle-text:active{ background:rgba(35,41,30,.08); }
 
-  .details-toggle{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--ink-soft); background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:4px 10px; cursor:pointer; margin-top:10px; }
+  .details-toggle{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:10.5px; color:var(--ink-soft); background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:4px 10px; cursor:pointer; margin-top:10px; }
   .details-toggle:active{ background:rgba(35,41,30,.08); }
-  .details-panel{ font-size:10.5px; color:var(--ink-soft); line-height:1.45; margin-top:8px; }
+  .details-panel{ font-weight:var(--fw-light); font-size:10.5px; color:var(--ink-soft); line-height:1.45; margin-top:8px; }
 
-  .est-badge{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:var(--flag); border:1px solid var(--flag); border-radius:20px; padding:1px 6px; margin-left:6px; display:inline-block; vertical-align:middle; }
+  .est-badge{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-semibold); font-size:9px; letter-spacing:.05em; text-transform:uppercase; color:var(--flag); border:1px solid var(--flag); border-radius:20px; padding:1px 6px; margin-left:6px; display:inline-block; vertical-align:middle; }
   .live-badge{ color:var(--slope); border-color:var(--slope); }
 
   .mode-toggle{ display:flex; gap:6px; margin-bottom:8px; }
-  .mode-btn{ flex:1; font-family:'Space Mono',monospace; font-size:12px; padding:8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink-soft); cursor:pointer; text-align:center; }
-  .mode-btn.active{ background:var(--flag); color:#fff; border-color:var(--flag); font-weight:700; }
+  .mode-btn{ flex:1; font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:12px; padding:8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink-soft); cursor:pointer; text-align:center; }
+  .mode-btn.active{ background:var(--flag); color:#fff; border-color:var(--flag); font-weight:var(--fw-semibold); }
   .mode-btn.active[data-mode="target"]{ background:var(--wood); border-color:var(--wood); }
+  .mode-btn.active[data-mode="me"]{ background:var(--slope); border-color:var(--slope); }
   #golfMap{ height:260px; border-radius:10px; overflow:hidden; border:1px solid rgba(35,41,30,.15); position:relative; z-index:1; }
   .divicon-marker{ filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
   .divicon-user{ width:14px; height:14px; border-radius:50%; background:#6E8E88; border:2px solid #fff; box-shadow:0 0 0 4px rgba(110,142,136,.3); }
   .live-stats{ display:flex; gap:10px; margin-top:10px; }
   .live-stat{ flex:1; background:#F3F5EC; border-radius:8px; padding:8px 10px; border:1px solid rgba(35,41,30,.12); }
-  .live-stat .k{ font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-soft); }
-  .live-stat .v{ font-family:'Fraunces',serif; font-weight:700; font-size:19px; margin-top:2px; }
-  .live-stat .v small{ font-family:'Space Mono',monospace; font-size:11px; font-weight:400; color:var(--ink-soft); }
+  .live-stat .k{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .live-stat .v{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:19px; letter-spacing:-0.01em; margin-top:2px; }
+  .live-stat .v small{ font-family:'Urbanist',sans-serif; font-size:11px; font-weight:var(--fw-regular); color:var(--ink-soft); }
 
-  .weather-line{ font-family:'Space Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin:10px 0 8px; padding:8px 10px; background:rgba(110,142,136,.1); border-radius:8px; border:1px solid rgba(110,142,136,.25); }
+  .weather-line{ font-family:'Urbanist',sans-serif; font-size:11.5px; color:var(--ink-soft); margin:10px 0 8px; padding:8px 10px; background:rgba(110,142,136,.1); border-radius:8px; border:1px solid rgba(110,142,136,.25); }
   .plan-grid{ display:flex; gap:10px; margin-top:8px; }
   .plan-col{ flex:1; background:#F3F5EC; border:1px solid rgba(35,41,30,.15); border-radius:10px; padding:10px; }
   .plan-col.aggr{ border-left:4px solid var(--flag); }
   .plan-col.cons{ border-left:4px solid var(--slope); }
-  .plan-kicker{ font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); }
-  .plan-club{ font-family:'Fraunces',serif; font-weight:700; font-size:19px; margin-top:2px; }
-  .plan-yard{ font-family:'Space Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
+  .plan-kicker{ font-family:'Urbanist',sans-serif; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); }
+  .plan-club{ font-family:'Urbanist',sans-serif; font-weight:700; font-size:19px; margin-top:2px; }
+  .plan-yard{ font-family:'Urbanist',sans-serif; font-size:11.5px; color:var(--ink-soft); margin-top:2px; }
   .plan-note{ font-size:11px; margin-top:6px; color:var(--ink-soft); line-height:1.35; }
 
   .caddie-club-row{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; }
-  .caddie-line-raw{ font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-soft); }
-  .caddie-club{ font-family:'Fraunces',serif; font-weight:700; font-size:28px; color:var(--ink); }
-  .caddie-note{ font-size:12.5px; color:var(--ink-soft); margin-top:6px; line-height:1.4; }
-  .caddie-teeshot{ font-family:'Fraunces',serif; font-weight:600; font-size:15px; color:var(--ink); line-height:1.4; }
+  .caddie-line-raw{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-regular); font-size:12px; color:var(--ink-soft); }
+  .caddie-line-raw .num-strong{ font-weight:var(--fw-bold); font-size:14px; color:var(--ink); letter-spacing:-0.01em; }
+  .caddie-club{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-xbold); font-size:28px; letter-spacing:-0.01em; color:var(--ink); }
+  .caddie-note{ font-weight:var(--fw-semibold); font-size:12.5px; color:var(--ink); margin-top:6px; line-height:1.4; }
+  .caddie-teeshot{ font-family:'Urbanist',sans-serif; font-weight:600; font-size:15px; color:var(--ink); line-height:1.4; }
 
   .lz-row{ display:flex; gap:16px; align-items:center; }
   .lz-half{ flex:1; min-width:0; }
@@ -121,11 +128,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .lz-slider::-moz-range-track{ height:6px; border-radius:4px; background:#B7A987; }
   .lz-slider::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:22px; height:22px; margin-top:-8px; border-radius:50%; background:var(--wood); border:3px solid var(--parchment); box-shadow:0 2px 6px rgba(0,0,0,.35); cursor:pointer; }
   .lz-slider::-moz-range-thumb{ width:22px; height:22px; border-radius:50%; background:var(--wood); border:3px solid var(--parchment); box-shadow:0 2px 6px rgba(0,0,0,.35); cursor:pointer; border:none; }
-  .lz-readout{ display:flex; justify-content:space-between; align-items:center; font-family:'Space Mono',monospace; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-top:8px; }
-  .lz-readout span:nth-child(2){ font-family:'Fraunces',serif; font-weight:700; font-size:14px; letter-spacing:0; text-transform:none; color:var(--ink); }
+  .lz-readout{ display:flex; justify-content:space-between; align-items:center; font-family:'Urbanist',sans-serif; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); margin-top:8px; }
+  .lz-readout span:nth-child(2){ font-family:'Urbanist',sans-serif; font-weight:700; font-size:14px; letter-spacing:0; text-transform:none; color:var(--ink); }
   .fmb-half{ flex:1; display:flex; flex-direction:column; gap:5px; padding-left:12px; border-left:1px solid rgba(35,41,30,.15); }
-  .fmb-row{ display:flex; justify-content:space-between; align-items:baseline; font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft); }
-  .fmb-row b{ color:var(--ink); font-size:14px; font-family:'Fraunces',serif; }
+  .fmb-row{ display:flex; justify-content:space-between; align-items:baseline; font-family:'Urbanist',sans-serif; font-weight:var(--fw-light); font-size:11px; color:var(--ink-soft); }
+  .fmb-row b{ color:var(--ink); font-weight:var(--fw-semibold); font-size:14px; font-family:'Urbanist',sans-serif; }
 
   table.yard{ width:100%; border-collapse:collapse; }
 
@@ -141,55 +148,51 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   .green-diagram{ width:100%; border-radius:10px; background:#EEF1E6; border:1px solid rgba(35,41,30,.12); }
 
-  textarea.notes{ width:100%; min-height:76px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; font-family:'Public Sans',sans-serif; font-size:13px; color:var(--ink); padding:10px; resize:vertical; }
+  textarea.notes{ width:100%; min-height:76px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; font-family:'Urbanist',sans-serif; font-size:13px; color:var(--ink); padding:10px; resize:vertical; }
   textarea.notes:focus{ outline:2px solid var(--flag); outline-offset:1px; }
   .save-row{ display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
-  .save-status{ font-size:11px; color:var(--ink-soft); font-family:'Space Mono',monospace; }
+  .save-status{ font-size:11px; color:var(--ink-soft); font-family:'Urbanist',sans-serif; }
 
   .video-wrap{ position:relative; width:100%; padding-top:56.25%; border-radius:10px; overflow:hidden; background:#000; }
   .video-wrap iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
   .video-fix{ margin-top:8px; display:flex; justify-content:flex-end; }
-  .video-fix button{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--ink-soft); background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:4px 10px; cursor:pointer; }
+  .video-fix button{ font-family:'Urbanist',sans-serif; font-size:10.5px; color:var(--ink-soft); background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:4px 10px; cursor:pointer; }
   .video-fix button:active{ background:rgba(35,41,30,.08); }
 
-  .map-caption{ font-size:10.5px; color:var(--ink-soft); line-height:1.4; }
+  .map-caption{ font-weight:var(--fw-light); font-size:10.5px; color:var(--ink-soft); line-height:1.4; }
 
   .compass-wrap{ display:flex; justify-content:center; padding:6px 0; }
   .compass-rose{ width:180px; height:180px; }
-  .shot-direction-wrap{ display:flex; justify-content:center; padding:8px 0 2px; }
-  .shot-direction-svg{ width:120px; height:120px; }
-  .shot-direction-row{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:6px; }
-  .shot-direction-label{ font-family:'Fraunces',serif; font-weight:700; font-size:16px; color:var(--ink); text-align:center; }
-  .wind-readout{ text-align:center; font-family:'Fraunces',serif; font-weight:700; font-size:22px; color:var(--ink); margin-top:4px; }
-  .wind-readout small{ font-family:'Space Mono',monospace; font-size:12px; font-weight:400; color:var(--ink-soft); }
-  select.voice-select{ flex:1; font-family:'Space Mono',monospace; font-size:12px; padding:9px 8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
+  .wind-readout{ text-align:center; font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:22px; letter-spacing:-0.01em; color:var(--ink); margin-top:4px; }
+  .wind-readout small{ font-family:'Urbanist',sans-serif; font-size:12px; font-weight:400; color:var(--ink-soft); }
+  select.voice-select{ flex:1; font-family:'Urbanist',sans-serif; font-size:12px; padding:9px 8px; border-radius:8px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
 
   /* ---- modal ---- */
   .modal-backdrop{ position:fixed; inset:0; background:rgba(30,37,28,.75); display:none; align-items:flex-end; justify-content:center; z-index:9999; }
   .modal-backdrop.open{ display:flex; }
   .modal{ background:var(--parchment); width:100%; max-width:480px; border-radius:18px 18px 0 0; max-height:82vh; overflow-y:auto; padding:18px 18px 24px; }
   .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
-  .modal-title{ font-family:'Fraunces',serif; font-weight:700; font-size:19px; }
-  .modal-close{ font-family:'Space Mono',monospace; font-size:12px; background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:5px 11px; cursor:pointer; }
-  .modal-sub{ font-size:11.5px; color:var(--ink-soft); margin-bottom:14px; }
+  .modal-title{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:19px; letter-spacing:-0.01em; }
+  .modal-close{ font-family:'Urbanist',sans-serif; font-size:12px; background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:5px 11px; cursor:pointer; }
+  .modal-sub{ font-weight:var(--fw-light); font-size:11.5px; color:var(--ink-soft); margin-bottom:14px; }
   .opt-section{ margin-top:18px; padding-top:16px; border-top:1px solid rgba(35,41,30,.12); }
   .opt-section:first-of-type{ margin-top:4px; padding-top:0; border-top:none; }
   .tee-select.in-modal{ padding:0; display:flex; flex-wrap:wrap; gap:7px; }
   .tee-select.in-modal .tee-btn{ background:#F3F5EC; color:var(--ink-soft); border-color:rgba(35,41,30,.2); }
   .tee-select.in-modal .tee-btn.active{ background:var(--fairway); color:var(--parchment); border-color:var(--fairway); }
-  .tee-btn{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'Space Mono',monospace; font-size:11.5px; border:1px solid rgba(35,41,30,.14); border-radius:20px; padding:6px 11px 6px 8px; cursor:pointer; transition:all .15s; }
+  .tee-btn{ flex:0 0 auto; display:flex; align-items:center; gap:6px; font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:11.5px; border:1px solid rgba(35,41,30,.14); border-radius:20px; padding:6px 11px 6px 8px; cursor:pointer; transition:all .15s; }
   .tee-btn .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
-  .tee-btn.active{ font-weight:700; }
+  .tee-btn.active{ font-weight:var(--fw-semibold); }
 
   .club-row{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px dashed rgba(35,41,30,.14); }
-  .club-row label{ flex:1; font-size:13.5px; font-weight:600; }
-  .club-row input{ width:70px; font-family:'Space Mono',monospace; font-size:13.5px; text-align:right; padding:6px 8px; border-radius:6px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
+  .club-row label{ flex:1; font-size:13.5px; font-weight:var(--fw-medium); }
+  .club-row input{ width:70px; font-family:'Urbanist',sans-serif; font-size:13.5px; text-align:right; padding:6px 8px; border-radius:6px; border:1px solid rgba(35,41,30,.2); background:#F3F5EC; color:var(--ink); }
   .club-row input:focus{ outline:2px solid var(--flag); outline-offset:1px; }
-  .club-row span.unit{ font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft); width:14px; }
+  .club-row span.unit{ font-family:'Urbanist',sans-serif; font-size:11px; color:var(--ink-soft); width:14px; }
   .modal .action-btn{ width:100%; justify-content:center; margin-top:14px; }
 
   .switch-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; }
-  .switch-row label.switch-label{ font-size:13.5px; font-weight:600; }
+  .switch-row label.switch-label{ font-size:13.5px; font-weight:var(--fw-medium); }
   .pill-switch{ position:relative; width:46px; height:26px; flex-shrink:0; display:inline-block; }
   .pill-switch input{ opacity:0; width:0; height:0; position:absolute; }
   .pill-slider{ position:absolute; inset:0; background:#D3D6C8; border-radius:26px; transition:.2s; cursor:pointer; }
@@ -217,6 +220,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="hole-meta-sm">
         <div class="hole-name-sm">Church Pews <span class="hole-tag-sm">— inspired by Oakmont</span></div>
         <div class="chips">
+          <span class="chip" id="teeColorChip">Black tee</span>
           <span class="chip">PAR 4</span>
           <span class="chip">HCP 4</span>
           <span class="chip big" id="ov-yards">451y</span>
@@ -235,9 +239,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="section-label"><span class="label-title">Caddie Read</span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-          <span style="font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft);">Distance to pin</span>
-          <input type="number" inputmode="numeric" id="pinDistanceInput" min="0" max="600" style="width:80px; font-family:'Space Mono',monospace; font-size:15px; font-weight:700; text-align:center; padding:7px; border-radius:8px; border:1px solid rgba(35,41,30,.25); background:#F3F5EC; color:var(--ink);">
-          <span style="font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-soft);">yd</span>
+          <span style="font-family:'Urbanist',sans-serif; font-size:11px; color:var(--ink-soft);">Distance to pin</span>
+          <input type="number" inputmode="numeric" id="pinDistanceInput" min="0" max="600" style="width:80px; font-family:'Urbanist',sans-serif; font-size:15px; font-weight:700; text-align:center; padding:7px; border-radius:8px; border:1px solid rgba(35,41,30,.25); background:#F3F5EC; color:var(--ink);">
+          <span style="font-family:'Urbanist',sans-serif; font-size:11px; color:var(--ink-soft);">yd</span>
           <span class="map-caption" style="margin-left:auto; text-align:right;">auto-fills once you drop a pin</span>
         </div>
         <div id="caddieReadBody"></div>
@@ -250,27 +254,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="mode-toggle">
           <div class="mode-btn active" data-mode="pin">Pin</div>
           <div class="mode-btn" data-mode="target">Target</div>
+          <div class="mode-btn" data-mode="me" id="meModeBtn" style="display:none;">My Location</div>
         </div>
         <div id="golfMap"></div>
         <div class="map-caption" id="locHint" style="margin-top:8px;">Turn on "Use my location" in Options to get live distances here.</div>
-
-        <div id="shotDirectionWrap" style="display:none;">
-          <div class="shot-direction-wrap">
-            <svg class="shot-direction-svg" id="shotDirectionSvg" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="54" fill="#F3F5EC" stroke="rgba(35,41,30,.18)" stroke-width="2"/>
-              <g id="shotArrowGroup" transform="rotate(0 60 60)">
-                <line x1="60" y1="60" x2="60" y2="18" stroke="#7C6A40" stroke-width="5" stroke-linecap="round"/>
-                <path d="M60 8 L74 30 L46 30 Z" fill="#7C6A40"/>
-              </g>
-              <circle cx="60" cy="60" r="4" fill="#23291E"/>
-            </svg>
-          </div>
-          <div class="shot-direction-row">
-            <div class="shot-direction-label" id="shotDirectionLabel">Target ahead</div>
-            <button class="action-btn secondary" id="faceTargetBtn" style="margin:0;">Face target</button>
-          </div>
-          <div class="map-caption" id="shotDirectionCaption" style="text-align:center; margin-top:4px;"></div>
-        </div>
 
         <div class="live-stats" id="liveStats" style="display:none;">
           <div class="live-stat"><div class="k">To pin</div><div class="v" id="stat-pin">—</div></div>
@@ -279,7 +266,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <button class="details-toggle" type="button" data-details="pintarget">Details</button>
-        <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. Turn on "Use my location" in Options for real live distances. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically.</div>
+        <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. With "Use my location" on in Options, your position comes from GPS automatically. Turn it off to plan a hole before you arrive — a "My Location" option appears above so you can drop yourself anywhere on the map and get the same distances and club recommendation you'd get on the course. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically.</div>
       </div>
     </div>
 
@@ -302,10 +289,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="compass-wrap">
           <svg class="compass-rose" id="compassRose" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="92" fill="#F3F5EC" stroke="rgba(35,41,30,.2)" stroke-width="2"/>
-            <text x="100" y="24" font-family="Space Mono, monospace" font-size="14" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
-            <text x="176" y="105" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">E</text>
-            <text x="100" y="186" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">S</text>
-            <text x="24" y="105" font-family="Space Mono, monospace" font-size="12" fill="#57604C" text-anchor="middle">W</text>
+            <text x="100" y="24" font-family="Urbanist, sans-serif" font-size="14" font-weight="700" fill="#23291E" text-anchor="middle">N</text>
+            <text x="176" y="105" font-family="Urbanist, sans-serif" font-size="12" fill="#57604C" text-anchor="middle">E</text>
+            <text x="100" y="186" font-family="Urbanist, sans-serif" font-size="12" fill="#57604C" text-anchor="middle">S</text>
+            <text x="24" y="105" font-family="Urbanist, sans-serif" font-size="12" fill="#57604C" text-anchor="middle">W</text>
             <!-- heading needle: shows which way YOU are facing. Thin, muted, separate from the wind arrow on purpose. -->
             <g id="headingNeedleGroup" transform="rotate(0 100 100)" style="opacity:0; transition:opacity .3s;">
               <line x1="100" y1="100" x2="100" y2="46" stroke="#6E8E88" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 5"/>
@@ -343,9 +330,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <line x1="175" y1="95" x2="175" y2="72" stroke="#23291E" stroke-width="1.5"/>
           <path d="M175 72 L192 78 L175 84 Z" fill="#7C6A40"/>
           <ellipse cx="215" cy="155" rx="20" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="215" y="182" font-family="Space Mono, monospace" font-size="9" fill="#6E8E88" text-anchor="middle">safe miss</text>
-          <text x="95" y="185" font-family="Space Mono, monospace" font-size="9" fill="#7E8568" text-anchor="middle">avoid</text>
-          <text x="235" y="52" font-family="Space Mono, monospace" font-size="9" fill="#7E8568" text-anchor="middle">avoid (long)</text>
+          <text x="215" y="182" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle">safe miss</text>
+          <text x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid</text>
+          <text x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid (long)</text>
         </svg>
         <div class="map-caption" style="margin-top:8px;">Red arrow = estimated overall fall line (back-right → front-left). Replace with real slope once you've read a few putts here.</div>
       </div>
@@ -477,12 +464,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   const TEES = [
-    { key:'oak',    name:'Oak',    label:'Black',  color:'#1a1a1a', yards:{1:451} },
-    { key:'maple',  name:'Maple',  label:'Green',  color:'#2F6B3A', yards:{1:442} },
-    { key:'birch',  name:'Birch',  label:'Blue',   color:'#2E5C8A', yards:{1:416} },
-    { key:'pine',   name:'Pine',   label:'White',  color:'#E7E2D6', border:'#999', yards:{1:408} },
-    { key:'cedar',  name:'Cedar',  label:'Yellow', color:'#D8B24A', yards:{1:370} },
-    { key:'spruce', name:'Spruce', label:'Red',    color:'#B23A2E', yards:{1:340} }
+    { key:'oak',    name:'Oak',    label:'Black',  color:'#1a1a1a', textOn:'#fff',    yards:{1:451} },
+    { key:'maple',  name:'Maple',  label:'Green',  color:'#2F6B3A', textOn:'#fff',    yards:{1:442} },
+    { key:'birch',  name:'Birch',  label:'Blue',   color:'#2E5C8A', textOn:'#fff',    yards:{1:416} },
+    { key:'pine',   name:'Pine',   label:'White',  color:'#E7E2D6', border:'#999', textOn:'#23291E', yards:{1:408} },
+    { key:'cedar',  name:'Cedar',  label:'Yellow', color:'#D8B24A', textOn:'#23291E', yards:{1:370} },
+    { key:'spruce', name:'Spruce', label:'Red',    color:'#B23A2E', textOn:'#fff',    yards:{1:340} }
   ];
   const GREEN_HALF_DEPTH = 15; // estimated half-depth of green, yards (scorecard total = middle of green)
   const HOLE1 = {
@@ -513,6 +500,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const chip = document.getElementById('ov-yards');
     const tee = TEES.find(t => t.key===selectedTee);
     if(chip && tee.yards[1]) chip.textContent = tee.yards[1] + 'y';
+
+    const teeColorChip = document.getElementById('teeColorChip');
+    if(teeColorChip){
+      teeColorChip.textContent = tee.label + ' tee';
+      teeColorChip.style.background = tee.color;
+      teeColorChip.style.color = tee.textOn || '#fff';
+      teeColorChip.style.border = tee.border ? `1px solid ${tee.border}` : 'none';
+    }
 
     const pinInput = document.getElementById('pinDistanceInput');
     if(pinInput && !pinInput.dataset.touched && !(userMarker && pinMarker)) pinInput.value = tee.yards[1];
@@ -692,9 +687,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       if(placeMode === 'pin'){
         if(pinMarker) pinMarker.setLatLng(e.latlng); else pinMarker = L.marker(e.latlng, {icon:pinIcon}).addTo(golfMap);
         try{ await storageAPI.set('hole1:pin', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
-      } else {
+      } else if(placeMode === 'target'){
         if(targetMarker) targetMarker.setLatLng(e.latlng); else targetMarker = L.marker(e.latlng, {icon:targetIcon}).addTo(golfMap);
         try{ await storageAPI.set('hole1:target', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+      } else if(placeMode === 'me' && !locationEnabled){
+        // Manual position for off-course planning — feeds into every calculation exactly
+        // like a real GPS fix, since it's the same userMarker everything else reads from.
+        if(userMarker) userMarker.setLatLng(e.latlng); else userMarker = L.marker(e.latlng, {icon:userIcon}).addTo(golfMap);
+        try{ await storageAPI.set('hole1:myLocation', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       }
       recalcLiveStats();
     });
@@ -708,12 +708,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const t = await storageAPI.get('hole1:target');
         if(t && t.value){ const c = JSON.parse(t.value); targetMarker = L.marker([c.lat,c.lon], {icon:targetIcon}).addTo(golfMap); }
       }catch(e){}
+      if(!locationEnabled){
+        try{
+          const m = await storageAPI.get('hole1:myLocation');
+          if(m && m.value){ const c = JSON.parse(m.value); userMarker = L.marker([c.lat,c.lon], {icon:userIcon}).addTo(golfMap); }
+        }catch(e){}
+      }
       recalcLiveStats();
     })();
   }
 
+  function updateMeModeVisibility(){
+    const btn = document.getElementById('meModeBtn');
+    if(!btn) return;
+    btn.style.display = locationEnabled ? 'none' : '';
+    if(locationEnabled && placeMode === 'me'){
+      placeMode = 'pin';
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode==='pin'));
+    }
+  }
+
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      if(btn.dataset.mode === 'me' && locationEnabled) return; // GPS is driving position, manual mode not available
       placeMode = btn.dataset.mode;
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b===btn));
     });
@@ -751,43 +768,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   }
 
-  function updateShotDirection(){
-    const wrap = document.getElementById('shotDirectionWrap');
-    if(!wrap) return;
-    const dest = targetMarker || pinMarker;
-    if(!userMarker || !dest){ wrap.style.display = 'none'; return; }
-
-    const u = userMarker.getLatLng(), d = dest.getLatLng();
-    const bearing = bearingDeg(u.lat, u.lng, d.lat, d.lng);
-    const arrowGroup = document.getElementById('shotArrowGroup');
-    const label = document.getElementById('shotDirectionLabel');
-    const caption = document.getElementById('shotDirectionCaption');
-    const destName = targetMarker ? 'Target' : 'Pin';
-
-    if(compassEnabled){
-      const rel = (bearing - currentHeading + 360) % 360;
-      arrowGroup.setAttribute('transform', `rotate(${rel} 60 60)`);
-      label.textContent = `${destName} ahead`;
-      caption.textContent = 'Turn until the arrow points straight up, then walk that way.';
-    } else {
-      arrowGroup.setAttribute('transform', `rotate(${bearing} 60 60)`);
-      label.textContent = `${destName}: ${compass(bearing)}`;
-      caption.textContent = 'Enable compass in Options for a live turn-and-go arrow.';
-    }
-    wrap.style.display = '';
-  }
-  document.getElementById('faceTargetBtn').addEventListener('click', () => {
-    if(!compassEnabled){ document.getElementById('openOptionsBtn').click(); return; }
-    updateShotDirection();
-  });
-
   function recalcLiveStats(){
     const statsWrap = document.getElementById('liveStats');
     const statPin = document.getElementById('stat-pin');
     const statTarget = document.getElementById('stat-target');
     const statTargetFront = document.getElementById('stat-target-front');
     const locHint = document.getElementById('locHint');
-    updateShotDirection();
     updateObstacleTracking();
     if(!userMarker || !pinMarker){
       if(statsWrap) statsWrap.style.display='none';
@@ -856,6 +842,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     locationEnabled = on;
     try{ await storageAPI.set('app:locationEnabled', on?'1':'0'); }catch(e){}
     const sw = document.getElementById('locSwitch');
+    updateMeModeVisibility();
     if(on){
       if(watchId !== null) return;
       try{
@@ -869,6 +856,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(sw) sw.checked = false;
         locationEnabled = false;
         try{ await storageAPI.set('app:locationEnabled','0'); }catch(err){}
+        updateMeModeVisibility();
         return;
       }
       watchId = navigator.geolocation.watchPosition(pos => {
@@ -951,7 +939,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     else return;
     currentHeading = heading;
     renderCompass();
-    updateShotDirection();
   }
 
   async function setCompassEnabled(on, silent){
@@ -967,7 +954,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         window.addEventListener('deviceorientationabsolute', handleOrientation, true);
         window.addEventListener('deviceorientation', handleOrientation, true);
         if(!cachedWind) refreshWind();
-        updateShotDirection();
       }catch(e){
         if(!silent) alert('Compass not available on this device/browser: ' + e.message);
         if(sw) sw.checked = false;
@@ -979,7 +965,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.removeEventListener('deviceorientation', handleOrientation, true);
       currentHeading = 0;
       renderCompass();
-      updateShotDirection();
     }
   }
 
@@ -1301,8 +1286,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       html += `<div class="caddie-club-row">`;
       html += `<div>`;
-      if(f.hasPin) html += `<div class="caddie-line-raw">${f.pin} to pin${f.showsPlaying?` <small>· plays ${f.pinPlaying}</small>`:''}</div>`;
-      if(f.hasTarget) html += `<div class="caddie-line-raw">${f.target} to target${f.showsPlaying?` <small>· plays ${f.targetPlaying}</small>`:''}</div>`;
+      if(f.hasPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.pin}y</span> to pin${f.showsPlaying?` — plays <span class="num-strong">${f.pinPlaying}y</span>`:''}</div>`;
+      if(f.hasTarget) html += `<div class="caddie-line-raw"><span class="num-strong">${f.target}y</span> to target${f.showsPlaying?` — plays <span class="num-strong">${f.targetPlaying}y</span>`:''}</div>`;
       if(!f.hasPin && !f.hasTarget) html += `<div class="caddie-line-raw">On the tee</div>`;
       html += `</div>`;
       html += f.club ? `<div class="caddie-club">${f.club}</div>` : '';
@@ -1365,10 +1350,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     wireVideo();
     initGolfMap();
 
+    updateMeModeVisibility();
+
     try{
       const locRes = await storageAPI.get('app:locationEnabled');
-      if(locRes && locRes.value === '1'){ document.getElementById('locSwitch').checked = true; setLocationEnabled(true, true); }
-    }catch(e){}
+      // Default is ON: if no preference has ever been saved, treat that as "on" rather
+      // than requiring the golfer to find the toggle first.
+      const shouldEnable = !locRes || !locRes.value || locRes.value === '1';
+      if(shouldEnable){ document.getElementById('locSwitch').checked = true; setLocationEnabled(true, true); }
+    }catch(e){
+      document.getElementById('locSwitch').checked = true; setLocationEnabled(true, true);
+    }
     try{
       const compRes = await storageAPI.get('app:compassEnabled');
       if(compRes && compRes.value === '1'){ document.getElementById('compassSwitch').checked = true; setCompassEnabled(true, true); }

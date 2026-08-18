@@ -1009,7 +1009,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const info = document.getElementById('windCompassInfo');
     if(info){
       let txt = '';
-      if(windTempVal!==null) txt += `${Math.round(windTempVal)}°F`;
+      if(windTempVal!==null) txt += `${Math.round(windTempVal)}°C`;
       if(!compassEnabled) txt += (txt?' · ':'') + 'Enable compass in Options so the arrow stays locked to the real direction as you turn.';
       if(!txt) txt = 'Tap "Refresh wind" for current conditions.';
       info.textContent = txt;
@@ -1023,7 +1023,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(btn){ btn.disabled = true; btn.textContent = 'Fetching…'; }
     try{
       const coords = userMarker ? { latitude:userMarker.getLatLng().lat, longitude:userMarker.getLatLng().lng } : await getPosition();
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=fahrenheit`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius`;
       const resp = await fetch(url);
       const data = await resp.json();
       if(data && data.current){
@@ -1114,7 +1114,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(!shouldFetchWind(force)) return;
     try{
       const coords = userMarker ? { latitude:userMarker.getLatLng().lat, longitude:userMarker.getLatLng().lng } : await getPosition();
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=fahrenheit`;
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius`;
       const resp = await fetch(url);
       const data = await resp.json();
       if(data && data.current){

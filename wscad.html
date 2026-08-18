@@ -986,10 +986,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     const clubLine = document.getElementById('windClubLine');
     if(clubLine){
-      const delta = windClubDelta();
-      if(delta === null) clubLine.textContent = currentWindDir!==null ? 'Set a pin for club impact' : '—';
-      else if(delta === 0) clubLine.textContent = 'No club change';
-      else clubLine.textContent = `${delta > 0 ? '+' : ''}${delta} club${Math.abs(delta)>1?'s':''}`;
+      const phrase = windClubPhrase();
+      clubLine.textContent = phrase !== null ? phrase : (currentWindDir!==null ? 'Set a pin for club impact' : '—');
     }
 
     const info = document.getElementById('windCompassInfo');
@@ -1128,29 +1126,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const compMph = comp * 0.621371;
     return compMph > 0 ? compMph : compMph * 0.5;
   }
-  // "+1 club" style indicator: roughly 1 club per 15-20 km/h of headwind, tailwind dampened,
-  // crosswind treated as negligible for club selection (it's an aim adjustment, not a club one).
-  // When real club-bag data exists, this instead measures the actual club-gap difference
-  // between the raw-distance pick and the wind-adjusted pick — more accurate than the rule
-  // of thumb, and guaranteed to agree with the main Recommended Club, since it's derived
-  // from the exact same numbers.
-  function windClubDelta(){
+  // Wind-based club recommendation, per exact rule set: only recommend a change when the
+  // wind is primarily into or with the shot (within 45° of directly into/away). Crosswind —
+  // and any into/with wind too light to matter — always returns "No club change". Magnitude
+  // uses the effective (cosine-projected) headwind/tailwind component, never total wind speed.
+  function windClubPhrase(){
     if(!cachedWind) return null;
     const bearing = currentShotBearing();
     if(bearing === null) return null;
-    const comp = windComponentKmh(bearing);
-    const adjustment = windAdjustmentYards(bearing);
-    const bagEntries = Object.entries(clubBag);
-    if(bagEntries.length >= 2){
-      const recDist = currentRecDistance().recDist;
-      const sortedDesc = [...bagEntries].sort((a,b)=>b[1]-a[1]);
-      const idxOf = (name) => sortedDesc.findIndex(e=>e[0]===name);
-      const rawClub = pickClub(clubBag, recDist);
-      const windClub = pickClub(clubBag, recDist + adjustment);
-      return idxOf(rawClub[0]) - idxOf(windClub[0]);
+
+    let diff = ((cachedWind.wind_direction_10m - bearing) + 540) % 360 - 180; // -180..180
+    const absDiff = Math.abs(diff);
+    if(absDiff > 45 && absDiff < 135) return 'No club change'; // primarily crosswind
+
+    const comp = cachedWind.wind_speed_10m * Math.cos(toRad(diff)); // effective component, positive = into the wind
+
+    if(comp >= 0){
+      if(comp <= 8) return 'No club change';
+      if(comp <= 20) return 'Take one more club';
+      if(comp <= 30) return 'Take two more clubs';
+      return 'Take three more clubs';
+    } else {
+      const t = Math.abs(comp);
+      if(t <= 10) return 'No club change';
+      if(t <= 25) return 'Take one less club';
+      if(t <= 40) return 'Take two less clubs';
+      return 'Take three less clubs';
     }
-    if(Math.abs(comp) < 5) return 0; // crosswind or negligible — adjust aim, not club
-    return comp > 0 ? Math.round(comp / 17.5) : -Math.round(Math.abs(comp) / 30);
   }
 
   function currentRecDistance(){

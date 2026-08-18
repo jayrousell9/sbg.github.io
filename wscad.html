@@ -217,16 +217,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="sticky-top" id="stickyTop">
     <div class="header-row">
       <div class="brand">Wooden Sticks<small>Caddie Book · Uxbridge, ON</small></div>
-      <button class="clubs-btn" id="openOptionsBtn">Options</button>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+        <button class="clubs-btn" id="openOptionsBtn">Options</button>
+        <span class="map-caption" id="holePositionHint" style="color:var(--parchment-dim); opacity:.75;">Hole 1 of 3 · swipe</span>
+      </div>
     </div>
     <div class="hole-strip">
-      <div class="hole-num-sm">1</div>
+      <div class="hole-num-sm" id="holeNumChip">1</div>
       <div class="hole-meta-sm">
-        <div class="hole-name-sm">Church Pews <span class="hole-tag-sm">— inspired by Oakmont</span></div>
+        <div class="hole-name-sm" id="holeNameChip">Church Pews <span class="hole-tag-sm" id="holeTagChip">— inspired by Oakmont</span></div>
         <div class="chips">
           <span class="chip" id="teeColorChip">Black tee</span>
-          <span class="chip">PAR 4</span>
-          <span class="chip">HCP 4</span>
+          <span class="chip" id="parChip">PAR 4</span>
+          <span class="chip" id="hcpChip">HCP 4</span>
           <span class="chip big" id="ov-yards">451y</span>
         </div>
       </div>
@@ -264,13 +267,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="card" data-collapse-key="obstacles">
       <div class="section-label"><span class="label-title">Obstacles &amp; targets <span class="est-badge" id="obstaclesBadge">Estimated</span></span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
-        <ul class="plain">
-          <li class="ob-item" data-obid="churchpew"><span class="marker bunker"></span><div><span class="li-title">Church Pew bunker complex</span><span class="ob-live"></span> — left rough, roughly 175–230y from the tips.<div class="li-note">Signature feature: parallel grass ridges inside a long bunker, à la Oakmont.</div></div></li>
-          <li class="ob-item" data-obid="fwbunkerR"><span class="marker bunker"></span><div><span class="li-title">Fairway bunker, right side</span><span class="ob-live"></span> — catches the shorter miss around 235–255y.</div></li>
-          <li class="ob-item" data-obid="treeline"><span class="marker tree"></span><div><span class="li-title">Tree line, right corridor</span><span class="ob-live"></span> — frames the hole from tee to landing area.</div></li>
-          <li class="ob-item" data-obid="greenside"><span class="marker bunker"></span><div><span class="li-title">Greenside bunker, front-left</span><span class="ob-live"></span> — guards the approach.</div></li>
-          <li><span class="marker target"></span><div><span class="li-title">Aiming target</span> — favor center-right of the fairway to stay clear of the Church Pews.</div></li>
-        </ul>
+        <ul class="plain" id="obstaclesList"></ul>
       </div>
     </div>
 
@@ -313,11 +310,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <line x1="175" y1="95" x2="175" y2="72" stroke="#23291E" stroke-width="1.5"/>
           <path d="M175 72 L192 78 L175 84 Z" fill="#7C6A40"/>
           <ellipse cx="215" cy="155" rx="20" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text x="215" y="182" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle">safe miss</text>
-          <text x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid</text>
-          <text x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid (long)</text>
+          <text id="greenMissLabel" x="215" y="182" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle">safe miss</text>
+          <text id="greenAvoidLabel" x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid</text>
+          <text id="greenAvoidLongLabel" x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid (long)</text>
         </svg>
-        <div class="map-caption" style="margin-top:8px;">Red arrow = estimated overall fall line (back-right → front-left). Replace with real slope once you've read a few putts here.</div>
+        <div class="map-caption" id="greenFallLineCaption" style="margin-top:8px;">Red arrow = estimated overall fall line (back-right → front-left). Replace with real slope once you've read a few putts here.</div>
       </div>
     </div>
 
@@ -325,7 +322,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="section-label"><span class="label-title">Fly-over</span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
         <div class="video-wrap">
-          <iframe id="video-h1" src="https://www.youtube.com/embed/bV1UaLcXcmE" title="Hole 1 fly-over" loading="lazy" allowfullscreen></iframe>
+          <iframe id="video-h1" src="https://www.youtube.com/embed/bV1UaLcXcmE" title="Hole fly-over" loading="lazy" allowfullscreen></iframe>
         </div>
         <div class="map-caption" id="video-caption">Hole 1 fly-over, from Wooden Sticks' course video series.</div>
       </div>
@@ -340,7 +337,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
   </div>
-  <div class="disclaimer">Yardages, par &amp; handicap from Wooden Sticks' official scorecard. Landing zone is yours to set. Hazard distances, green contours, hole-video match, shot-advisor wind math, and live obstacle tracking are estimated/unverified — prototype for Hole 1 only. Wind compass heading accuracy depends on your device's sensors; voice caddie uses your device's built-in text-to-speech voices, not real people's voices.</div>
+  <div class="disclaimer">Yardages, par &amp; handicap from Wooden Sticks' official scorecard. Landing zone is yours to set. Hazard distances, green contours, hole-video match, shot-advisor wind math, and live obstacle tracking are estimated/unverified — prototype for Holes 1–3 only. Wind compass heading accuracy depends on your device's sensors; voice caddie uses your device's built-in text-to-speech voices, not real people's voices.</div>
 </div>
 
 <!-- ===================== OPTIONS MODAL ===================== -->
@@ -447,22 +444,73 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   const TEES = [
-    { key:'oak',    name:'Oak',    label:'Black',  color:'#1a1a1a', textOn:'#fff',    yards:{1:451} },
-    { key:'maple',  name:'Maple',  label:'Green',  color:'#2F6B3A', textOn:'#fff',    yards:{1:442} },
-    { key:'birch',  name:'Birch',  label:'Blue',   color:'#2E5C8A', textOn:'#fff',    yards:{1:416} },
-    { key:'pine',   name:'Pine',   label:'White',  color:'#E7E2D6', border:'#999', textOn:'#23291E', yards:{1:408} },
-    { key:'cedar',  name:'Cedar',  label:'Yellow', color:'#D8B24A', textOn:'#23291E', yards:{1:370} },
-    { key:'spruce', name:'Spruce', label:'Red',    color:'#B23A2E', textOn:'#fff',    yards:{1:340} }
+    { key:'oak',    name:'Oak',    label:'Black',  color:'#1a1a1a', textOn:'#fff'    },
+    { key:'maple',  name:'Maple',  label:'Green',  color:'#2F6B3A', textOn:'#fff'    },
+    { key:'birch',  name:'Birch',  label:'Blue',   color:'#2E5C8A', textOn:'#fff'    },
+    { key:'pine',   name:'Pine',   label:'White',  color:'#E7E2D6', border:'#999', textOn:'#23291E' },
+    { key:'cedar',  name:'Cedar',  label:'Yellow', color:'#D8B24A', textOn:'#23291E' },
+    { key:'spruce', name:'Spruce', label:'Red',    color:'#B23A2E', textOn:'#fff'    }
   ];
   const GREEN_HALF_DEPTH = 15; // estimated half-depth of green, yards (scorecard total = middle of green)
-  const HOLE1 = {
-    name:'Church Pews', par:4, hcp:4,
-    teeShotTip:'Favour the right side, stay clear of the Church Pews left.',
-    bestMiss:'short-right',
-    approachTip:'Best miss is short-right. Avoid the greenside bunkers.'
-  };
+
+  // Real par/hcp/yardages from Wooden Sticks' official scorecard. Obstacle positions, green
+  // detail, and tips are estimates — same honesty standard as the Hole 1 prototype.
+  const HOLES = [
+    {
+      number:1, name:'Church Pews', tag:'inspired by Oakmont',
+      par:4, hcp:4,
+      yards:{ oak:451, maple:442, birch:416, pine:408, cedar:370, spruce:340 },
+      teeShotTip:'Favour the right side, stay clear of the Church Pews left.',
+      approachTip:'Best miss is short-right. Avoid the greenside bunkers.',
+      aimTip:'Favour center-right of the fairway to stay clear of the Church Pews.',
+      fallLineText:'Red arrow = estimated overall fall line (back-right → front-left). Replace with real slope once you\'ve read a few putts here.',
+      greenMissText:'safe miss', greenAvoidText:'avoid', greenAvoidLongText:'avoid (long)',
+      videoId:'bV1UaLcXcmE',
+      obstacles:[
+        { id:'churchpew', title:'Church Pew bunker complex', desc:'left rough, roughly 175–230y from the tips.', note:'Signature feature: parallel grass ridges inside a long bunker, à la Oakmont.', tipsMid:202, type:'bunker' },
+        { id:'fwbunkerR', title:'Fairway bunker, right side', desc:'catches the shorter miss around 235–255y.', tipsMid:245, type:'bunker' },
+        { id:'treeline', title:'Tree line, right corridor', desc:'frames the hole from tee to landing area.', tipsMid:230, type:'tree' },
+        { id:'greenside', title:'Greenside bunker, front-left', desc:'guards the approach.', tipsMid:416, type:'bunker' }
+      ]
+    },
+    {
+      number:2, name:'The Shortcut', tag:'original design',
+      par:4, hcp:14,
+      yards:{ oak:331, maple:327, birch:316, pine:308, cedar:308, spruce:253 },
+      teeShotTip:'Favour left-center — trees crowd the right side the whole way in.',
+      approachTip:'Short iron in. Take dead aim, this green accepts a running shot.',
+      aimTip:'A drivable-feeling hole for the long hitters — respect the bunkers more than the length.',
+      fallLineText:'Red arrow = estimated overall fall line (back → front). Replace with real slope once you\'ve read a few putts here.',
+      greenMissText:'safe miss', greenAvoidText:'avoid', greenAvoidLongText:'avoid (long)',
+      videoId:'ACjiSTb1jaY',
+      obstacles:[
+        { id:'fwbunkerL', title:'Fairway bunker, left side', desc:'catches a pulled drive around 180–210y.', tipsMid:195, type:'bunker' },
+        { id:'treelineR', title:'Tree line, right corridor', desc:'tight the whole way up the right side.', tipsMid:150, type:'tree' },
+        { id:'greensideBR', title:'Greenside bunker, back-right', desc:'the main defense on a short green.', tipsMid:315, type:'bunker' }
+      ]
+    },
+    {
+      number:3, name:'Golden Bell', tag:'inspired by #12 Augusta National',
+      par:3, hcp:16,
+      yards:{ oak:188, maple:183, birch:155, pine:142, cedar:128, spruce:128 },
+      teeShotTip:'Pick a club and commit — shallow green, swirling wind, just like the real Amen Corner.',
+      approachTip:'Middle of the green is a great result here. Do not chase a tucked pin.',
+      aimTip:'Wind at green level can differ completely from wind at the tee — trust the flag, not just the app.',
+      fallLineText:'Red arrow = estimated overall fall line (back → front, toward the water). Replace with real slope once you\'ve read a few putts here.',
+      greenMissText:'bail long', greenAvoidText:'never short', greenAvoidLongText:'avoid (long)',
+      videoId:'8GydiSnjVfU',
+      obstacles:[
+        { id:'creek', title:'Water, front of green', desc:'runs the entire width short of the putting surface — the defining hazard of the hole.', tipsMid:178, type:'water' },
+        { id:'bunkerFL', title:'Bunker, front-left', desc:'guards the shallow front-left shelf.', tipsMid:182, type:'bunker' },
+        { id:'bunkerBack', title:'Bunker, back', desc:'a longer miss finds sand instead of trouble.', tipsMid:190, type:'bunker' }
+      ]
+    }
+  ];
 
   let selectedTee = 'oak';
+  let currentHoleIndex = 0;
+  function currentHole(){ return HOLES[currentHoleIndex]; }
+  function holeKey(suffix){ return 'hole' + currentHole().number + ':' + suffix; }
 
   function buildTeeSelector(){
     const wrap = document.getElementById('teeSelect');
@@ -482,7 +530,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     const chip = document.getElementById('ov-yards');
     const tee = TEES.find(t => t.key===selectedTee);
-    if(chip && tee.yards[1]) chip.textContent = tee.yards[1] + 'y';
+    const yards = currentHole().yards[selectedTee];
+    if(chip && yards) chip.textContent = yards + 'y';
 
     const teeColorChip = document.getElementById('teeColorChip');
     if(teeColorChip){
@@ -497,6 +546,95 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     try{ storageAPI.set('app:selectedTee', selectedTee); }catch(e){}
   }
+
+  // ---------------- per-hole rendering ----------------
+  const OB_MARKER_CLASS = { bunker:'bunker', tree:'tree', water:'water' };
+
+  function renderObstaclesList(){
+    const wrap = document.getElementById('obstaclesList');
+    if(!wrap) return;
+    const h = currentHole();
+    let html = '';
+    h.obstacles.forEach(ob => {
+      const cls = OB_MARKER_CLASS[ob.type] || 'bunker';
+      html += `<li class="ob-item" data-obid="${ob.id}"><span class="marker ${cls}"></span><div><span class="li-title">${ob.title}</span><span class="ob-live"></span> — ${ob.desc}${ob.note ? `<div class="li-note">${ob.note}</div>` : ''}</div></li>`;
+    });
+    html += `<li><span class="marker target"></span><div><span class="li-title">Aiming target</span> — ${h.aimTip}</div></li>`;
+    wrap.innerHTML = html;
+  }
+
+  function renderGreenDiagram(){
+    const h = currentHole();
+    const missEl = document.getElementById('greenMissLabel');
+    const avoidEl = document.getElementById('greenAvoidLabel');
+    const avoidLongEl = document.getElementById('greenAvoidLongLabel');
+    const captionEl = document.getElementById('greenFallLineCaption');
+    if(missEl) missEl.textContent = h.greenMissText;
+    if(avoidEl) avoidEl.textContent = h.greenAvoidText;
+    if(avoidLongEl) avoidLongEl.textContent = h.greenAvoidLongText;
+    if(captionEl) captionEl.textContent = h.fallLineText;
+  }
+
+  function renderHoleChrome(){
+    const h = currentHole();
+    const numEl = document.getElementById('holeNumChip');
+    const nameEl = document.getElementById('holeNameChip');
+    const tagEl = document.getElementById('holeTagChip');
+    const parEl = document.getElementById('parChip');
+    const hcpEl = document.getElementById('hcpChip');
+    const posEl = document.getElementById('holePositionHint');
+    if(numEl) numEl.textContent = h.number;
+    if(nameEl && tagEl){ nameEl.childNodes[0].nodeValue = h.name + ' '; tagEl.textContent = '— ' + h.tag; }
+    if(parEl) parEl.textContent = 'PAR ' + h.par;
+    if(hcpEl) hcpEl.textContent = 'HCP ' + h.hcp;
+    if(posEl) posEl.textContent = `Hole ${currentHoleIndex+1} of ${HOLES.length} · swipe`;
+    renderObstaclesList();
+    renderGreenDiagram();
+    applyTee();
+    loadVideoForCurrentHole();
+    loadNotesForCurrentHole();
+  }
+
+  // ---------------- swipe navigation between holes ----------------
+  function animateHoleChange(dx, afterFn){
+    const regions = [document.querySelector('.hole-strip'), document.getElementById('content')];
+    regions.forEach(el => { if(el){ el.style.transition = 'transform .16s ease, opacity .16s ease'; el.style.transform = `translateX(${dx}px)`; el.style.opacity = '0'; } });
+    setTimeout(() => {
+      afterFn();
+      regions.forEach(el => { if(el){ el.style.transition = 'none'; el.style.transform = `translateX(${-dx}px)`; } });
+      void document.body.offsetWidth; // force reflow so the next transition actually animates
+      regions.forEach(el => { if(el){ el.style.transition = 'transform .18s ease, opacity .18s ease'; el.style.transform = 'translateX(0)'; el.style.opacity = '1'; } });
+    }, 160);
+  }
+
+  async function goToHole(newIndex, dx){
+    currentHoleIndex = ((newIndex % HOLES.length) + HOLES.length) % HOLES.length;
+    animateHoleChange(dx, () => {
+      renderHoleChrome();
+      if(golfMap){ golfMap.setView([44.0957,-79.1242], 18); loadMarkersForCurrentHole(); }
+    });
+    try{ await storageAPI.set('app:currentHole', String(currentHoleIndex)); }catch(e){}
+  }
+
+  (function wireSwipeNavigation(){
+    let startX = 0, startY = 0, tracking = false;
+    document.addEventListener('touchstart', (e) => {
+      if(e.touches.length !== 1) return;
+      const optionsModal = document.getElementById('optionsModal');
+      if(optionsModal && optionsModal.classList.contains('open')) { tracking = false; return; }
+      const golfMapEl = document.getElementById('golfMap');
+      if(golfMapEl && golfMapEl.contains(e.target)) { tracking = false; return; } // let Leaflet handle its own panning
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true;
+    }, { passive:true });
+    document.addEventListener('touchend', (e) => {
+      if(!tracking) return;
+      tracking = false;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - startX, dy = touch.clientY - startY;
+      if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.4) return; // not a clear horizontal swipe
+      if(dx < 0) goToHole(currentHoleIndex + 1, -24); else goToHole(currentHoleIndex - 1, 24);
+    }, { passive:true });
+  })();
 
   // ---------------- collapsible cards ----------------
   let collapsedState = {};
@@ -644,8 +782,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   let golfMap, pinMarker, targetMarker, userMarker;
   let placeMode = 'pin';
   const YD_FMT = y => Math.round(y) + 'y';
-  const TIPS_TOTAL = TEES.find(t=>t.key==='oak').yards[1];
-  const OBSTACLES_H1 = { churchpew:202, fwbunkerR:245, treeline:230, greenside: TIPS_TOTAL-35 };
 
   function divIcon(html, size){
     return L.divIcon({ className:'', html:`<div class="divicon-marker" style="width:${size}px;height:${size}px;">${html}</div>`, iconSize:[size,size], iconAnchor:[size/2,size/2] });
@@ -666,36 +802,45 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     golfMap.on('click', async (e) => {
       if(placeMode === 'pin'){
         if(pinMarker) pinMarker.setLatLng(e.latlng); else pinMarker = L.marker(e.latlng, {icon:pinIcon}).addTo(golfMap);
-        try{ await storageAPI.set('hole1:pin', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+        try{ await storageAPI.set(holeKey('pin'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       } else if(placeMode === 'target'){
         if(targetMarker) targetMarker.setLatLng(e.latlng); else targetMarker = L.marker(e.latlng, {icon:targetIcon}).addTo(golfMap);
-        try{ await storageAPI.set('hole1:target', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+        try{ await storageAPI.set(holeKey('target'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       } else if(placeMode === 'me' && !locationEnabled){
         // Manual position for off-course planning — feeds into every calculation exactly
         // like a real GPS fix, since it's the same userMarker everything else reads from.
         if(userMarker) userMarker.setLatLng(e.latlng); else userMarker = L.marker(e.latlng, {icon:userIcon}).addTo(golfMap);
-        try{ await storageAPI.set('hole1:myLocation', JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+        try{ await storageAPI.set(holeKey('myLocation'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       }
       recalcLiveStats();
     });
 
-    (async () => {
+    loadMarkersForCurrentHole();
+  }
+
+  // Clears the pin/target for whichever hole we're leaving and loads the pin/target
+  // (and, if GPS is off, the saved manual position) for whichever hole we're on now.
+  // userMarker itself is only touched here when location is off — with GPS on, your
+  // real position obviously doesn't change just because you swiped to a different hole.
+  async function loadMarkersForCurrentHole(){
+    if(pinMarker){ golfMap.removeLayer(pinMarker); pinMarker = null; }
+    if(targetMarker){ golfMap.removeLayer(targetMarker); targetMarker = null; }
+    if(!locationEnabled && userMarker){ golfMap.removeLayer(userMarker); userMarker = null; }
+    try{
+      const p = await storageAPI.get(holeKey('pin'));
+      if(p && p.value){ const c = JSON.parse(p.value); pinMarker = L.marker([c.lat,c.lon], {icon:pinIcon}).addTo(golfMap); }
+    }catch(e){}
+    try{
+      const t = await storageAPI.get(holeKey('target'));
+      if(t && t.value){ const c = JSON.parse(t.value); targetMarker = L.marker([c.lat,c.lon], {icon:targetIcon}).addTo(golfMap); }
+    }catch(e){}
+    if(!locationEnabled){
       try{
-        const p = await storageAPI.get('hole1:pin');
-        if(p && p.value){ const c = JSON.parse(p.value); pinMarker = L.marker([c.lat,c.lon], {icon:pinIcon}).addTo(golfMap); }
+        const m = await storageAPI.get(holeKey('myLocation'));
+        if(m && m.value){ const c = JSON.parse(m.value); userMarker = L.marker([c.lat,c.lon], {icon:userIcon}).addTo(golfMap); }
       }catch(e){}
-      try{
-        const t = await storageAPI.get('hole1:target');
-        if(t && t.value){ const c = JSON.parse(t.value); targetMarker = L.marker([c.lat,c.lon], {icon:targetIcon}).addTo(golfMap); }
-      }catch(e){}
-      if(!locationEnabled){
-        try{
-          const m = await storageAPI.get('hole1:myLocation');
-          if(m && m.value){ const c = JSON.parse(m.value); userMarker = L.marker([c.lat,c.lon], {icon:userIcon}).addTo(golfMap); }
-        }catch(e){}
-      }
-      recalcLiveStats();
-    })();
+    }
+    recalcLiveStats();
   }
 
   function updateMeModeVisibility(){
@@ -729,18 +874,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
     const u = userMarker.getLatLng(), p = pinMarker.getLatLng();
     const dPin = haversineYards(u.lat,u.lng,p.lat,p.lng);
-    const tee = TEES.find(t => t.key===selectedTee);
-    const total = tee.yards[1];
+    const total = currentHole().yards[selectedTee];
+    const tipsTotal = currentHole().yards.oak;
     const distanceCovered = total - dPin;
-    const backOffset = TIPS_TOTAL - total;
+    const backOffset = tipsTotal - total;
 
     const obBadge = document.getElementById('obstaclesBadge');
     if(obBadge){ obBadge.textContent = 'Live'; obBadge.classList.add('live-badge'); }
 
-    Object.keys(OBSTACLES_H1).forEach(id => {
-      const li = document.querySelector(`.ob-item[data-obid="${id}"]`);
+    currentHole().obstacles.forEach(ob => {
+      const li = document.querySelector(`.ob-item[data-obid="${ob.id}"]`);
       if(!li) return;
-      const fromTee = OBSTACLES_H1[id] - backOffset;
+      const fromTee = ob.tipsMid - backOffset;
       const diff = fromTee - distanceCovered;
       const liveEl = li.querySelector('.ob-live');
       if(diff <= 5){ li.classList.add('passed'); if(liveEl) liveEl.textContent = ' · passed'; }
@@ -1029,8 +1174,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const t=targetMarker.getLatLng(), p=pinMarker.getLatLng();
       targetToPinDist = haversineYards(t.lat,t.lng,p.lat,p.lng);
     }
-    const tee = TEES.find(t => t.key===selectedTee);
-    const teeTotal = tee.yards[1];
+    const teeTotal = currentHole().yards[selectedTee];
     let recDist, phase;
     if(targetDist !== null){ recDist = targetDist; phase = 'approach'; }
     else if(pinDist !== null){ recDist = pinDist; phase = 'approach'; }
@@ -1055,7 +1199,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     let club = null, clubNote = null;
     if(hasClubs){ club = pickClub(clubBag, playingDist); clubNote = clubNoteFor(club, playingDist); }
 
-    const tip = phase === 'approach' ? HOLE1.approachTip : HOLE1.teeShotTip;
+    const tip = phase === 'approach' ? currentHole().approachTip : currentHole().teeShotTip;
 
     const showGreen = pinDist !== null && pinDist < 300;
     const green = showGreen ? { front: pinDist - GREEN_HALF_DEPTH, middle: pinDist, back: pinDist + GREEN_HALF_DEPTH } : null;
@@ -1076,45 +1220,40 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const m = input.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
     return m ? m[1] : null;
   }
-  async function wireVideo(){
+  async function loadVideoForCurrentHole(){
     const iframe = document.getElementById('video-h1');
     const caption = document.getElementById('video-caption');
+    let id = currentHole().videoId;
     try{
-      const res = await storageAPI.get('hole1:videoId');
-      if(res && res.value){
-        iframe.src = 'https://www.youtube.com/embed/' + res.value;
-        caption.textContent = 'Hole 1 fly-over.';
-      }
+      const res = await storageAPI.get(holeKey('videoId'));
+      if(res && res.value) id = res.value;
     }catch(e){}
+    iframe.src = 'https://www.youtube.com/embed/' + id;
+    caption.textContent = `Hole ${currentHole().number} fly-over.`;
   }
 
-  // ---------------- notes (persistent, single box) ----------------
-  async function wireNotes(id, statusId, key){
-    const el = document.getElementById(id);
-    const status = document.getElementById(statusId);
+  // ---------------- notes (persistent, one box, re-bound per hole) ----------------
+  const notesEl = document.getElementById('notes-h1');
+  const notesStatusEl = document.getElementById('status-h1');
+  let notesSaveTimer;
+  async function loadNotesForCurrentHole(){
+    notesEl.value = '';
+    notesStatusEl.textContent = 'tap outside to save';
     try{
-      const res = await storageAPI.get(key);
-      if(res && res.value){
-        el.value = res.value;
-      } else {
-        let migrated = '';
-        try{ const a = await storageAPI.get('hole1:overview:notes'); if(a && a.value) migrated += a.value; }catch(e){}
-        try{ const b = await storageAPI.get('hole1:green:notes'); if(b && b.value) migrated += (migrated ? '\n\n' : '') + b.value; }catch(e){}
-        if(migrated){ el.value = migrated; try{ await storageAPI.set(key, migrated); }catch(e){} }
-      }
+      const res = await storageAPI.get(holeKey('notes'));
+      if(res && res.value) notesEl.value = res.value;
     }catch(e){}
-    let saveTimer;
-    el.addEventListener('input', () => {
-      status.textContent = 'saving…';
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(async () => {
-        try{ await storageAPI.set(key, el.value); status.textContent = 'saved ✓'; }
-        catch(e){ status.textContent = 'save failed — try again'; }
-      }, 600);
-    });
-    el.addEventListener('blur', () => { if(status.textContent === 'tap outside to save') status.textContent = 'saved ✓'; });
   }
-  wireNotes('notes-h1','status-h1','hole1:notes');
+  notesEl.addEventListener('input', () => {
+    const key = holeKey('notes'); // evaluated now, so a save always lands on the hole you were viewing when you typed
+    notesStatusEl.textContent = 'saving…';
+    clearTimeout(notesSaveTimer);
+    notesSaveTimer = setTimeout(async () => {
+      try{ await storageAPI.set(key, notesEl.value); notesStatusEl.textContent = 'saved ✓'; }
+      catch(e){ notesStatusEl.textContent = 'save failed — try again'; }
+    }, 600);
+  });
+  notesEl.addEventListener('blur', () => { if(notesStatusEl.textContent === 'tap outside to save') notesStatusEl.textContent = 'saved ✓'; });
 
   // ---------------- voice caddie ----------------
   // Architecture note (per your item 11): everything below only FORMATS the structured
@@ -1326,14 +1465,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try{ const res = await storageAPI.get('app:selectedTee'); if(res && res.value) selectedTee = res.value; }catch(e){}
     try{ const res = await storageAPI.get('app:personaIndex'); if(res && res.value) selectedPersonaIdx = parseInt(res.value,10) || 0; }catch(e){}
     try{ const res = await storageAPI.get('ui:collapsed'); if(res && res.value) collapsedState = JSON.parse(res.value); }catch(e){}
+    try{ const res = await storageAPI.get('app:currentHole'); if(res && res.value){ const idx = parseInt(res.value,10); if(idx>=0 && idx<HOLES.length) currentHoleIndex = idx; } }catch(e){}
 
     applyCollapsedState();
     wireCollapsibles();
     buildTeeSelector();
-    applyTee();
+    renderHoleChrome(); // renders hole text + calls applyTee/video/notes for the restored hole
     loadVoices();
     updatePersonaLabel();
-    wireVideo();
     initGolfMap();
 
     updateMeModeVisibility();

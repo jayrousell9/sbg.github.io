@@ -283,7 +283,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </g>
             <circle cx="70" cy="70" r="4" fill="#23291E"/>
           </svg>
-          <div class="wind-simple-line" id="windSpeedLine">— km/h FROM —</div>
+          <div class="wind-simple-line" id="windSpeedLine">— km/h from —</div>
           <div class="wind-simple-sub" id="windClubLine">—</div>
         </div>
         <div class="map-caption" id="windCompassInfo" style="text-align:center; margin-top:8px;">Turn on "Enable compass" in Options so the arrow stays locked to the real wind direction as you turn.</div>
@@ -312,7 +312,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <text id="greenAvoidLabel" x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid</text>
           <text id="greenAvoidLongLabel" x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid (long)</text>
         </svg>
-        <div class="map-caption" id="greenFallLineCaption" style="margin-top:8px;">Red arrow = estimated overall fall line (back-right → front-left). Replace with real slope once you've read a few putts here.</div>
+        <div class="map-caption" id="greenFallLineCaption" style="margin-top:8px;">Fall: <b>Back-right → Front-left</b><br>Safe miss: <b>Right</b> &nbsp;·&nbsp; Avoid: <b>Left</b><br>The green runs hard toward the front-left bunker — a shot that starts right and works back in is the safer play.</div>
       </div>
     </div>
 
@@ -461,8 +461,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       teeShotTip:'Favour the right side, stay clear of the Church Pews left.',
       approachTip:'Best miss is short-right. Avoid the greenside bunkers.',
       aimTip:'Favour center-right of the fairway to stay clear of the Church Pews.',
-      fallLineText:'Red arrow = estimated overall fall line (back-right → front-left). Replace with real slope once you\'ve read a few putts here.',
-      greenMissText:'safe miss', greenAvoidText:'avoid', greenAvoidLongText:'avoid (long)',
+      green:{
+        fall:'Back-right → Front-left',
+        safeMiss:'Right',
+        avoidMiss:'Left',
+        note:'The green runs hard toward the front-left bunker — a shot that starts right and works back in is the safer play. Confirmed by the "Church Pews" bunkering pulling misses left.'
+      },
       videoId:'bV1UaLcXcmE',
       obstacles:[
         { id:'churchpew', title:'Church Pew bunker complex', desc:'left rough, roughly 175–230y from the tips.', note:'Signature feature: parallel grass ridges inside a long bunker, à la Oakmont.', tipsMid:202, type:'bunker' },
@@ -478,8 +482,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       teeShotTip:'Favour left-center — trees crowd the right side the whole way in.',
       approachTip:'Short iron in. Take dead aim, this green accepts a running shot.',
       aimTip:'A drivable-feeling hole for the long hitters — respect the bunkers more than the length.',
-      fallLineText:'Red arrow = estimated overall fall line (back → front). Replace with real slope once you\'ve read a few putts here.',
-      greenMissText:'safe miss', greenAvoidText:'avoid', greenAvoidLongText:'avoid (long)',
+      green:{
+        fall:'Back → Front',
+        safeMiss:'Front',
+        avoidMiss:'Long / Back-right',
+        note:'Shallow green with a back-right bunker as its main defense — anything long brings the sand into play. Short is a far easier up-and-down than long.'
+      },
       videoId:'ACjiSTb1jaY',
       obstacles:[
         { id:'fwbunkerL', title:'Fairway bunker, left side', desc:'catches a pulled drive around 180–210y.', tipsMid:195, type:'bunker' },
@@ -494,8 +502,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       teeShotTip:'Pick a club and commit — shallow green, swirling wind, just like the real Amen Corner.',
       approachTip:'Middle of the green is a great result here. Do not chase a tucked pin.',
       aimTip:'Wind at green level can differ completely from wind at the tee — trust the flag, not just the app.',
-      fallLineText:'Red arrow = estimated overall fall line (back → front, toward the water). Replace with real slope once you\'ve read a few putts here.',
-      greenMissText:'bail long', greenAvoidText:'never short', greenAvoidLongText:'avoid (long)',
+      green:{
+        fall:'Back → Front, toward the water',
+        safeMiss:'Long',
+        avoidMiss:'Short (water)',
+        note:'Shallow, well-bunkered green with water guarding the entire front, mirroring the real Golden Bell — never take less than enough club, and long is always the safer miss.'
+      },
       videoId:'8GydiSnjVfU',
       obstacles:[
         { id:'creek', title:'Water, front of green', desc:'runs the entire width short of the putting surface — the defining hazard of the hole.', tipsMid:178, type:'water' },
@@ -562,15 +574,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function renderGreenDiagram(){
-    const h = currentHole();
+    // Single source of truth: currentHole().green. Nothing here retains or falls back to
+    // another hole's values — every field is re-read fresh on every call.
+    const g = currentHole().green;
     const missEl = document.getElementById('greenMissLabel');
     const avoidEl = document.getElementById('greenAvoidLabel');
     const avoidLongEl = document.getElementById('greenAvoidLongLabel');
     const captionEl = document.getElementById('greenFallLineCaption');
-    if(missEl) missEl.textContent = h.greenMissText;
-    if(avoidEl) avoidEl.textContent = h.greenAvoidText;
-    if(avoidLongEl) avoidLongEl.textContent = h.greenAvoidLongText;
-    if(captionEl) captionEl.textContent = h.fallLineText;
+    if(missEl) missEl.textContent = g.safeMiss;
+    if(avoidEl) avoidEl.textContent = g.avoidMiss;
+    if(avoidLongEl) avoidLongEl.textContent = 'long';
+    if(captionEl){
+      captionEl.innerHTML = `Fall: <b>${g.fall}</b><br>Safe miss: <b>${g.safeMiss}</b> &nbsp;·&nbsp; Avoid: <b>${g.avoidMiss}</b><br>${g.note}`;
+    }
   }
 
   function renderHoleChrome(){
@@ -981,8 +997,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const speedLine = document.getElementById('windSpeedLine');
     if(speedLine){
       speedLine.textContent = currentWindDir!==null
-        ? `${Math.round(windSpeedVal)} km/h FROM ${compass(currentWindDir)}`
-        : '— km/h FROM —';
+        ? `${Math.round(windSpeedVal)} km/h from ${compass(currentWindDir)}`
+        : '— km/h from —';
     }
     const clubLine = document.getElementById('windClubLine');
     if(clubLine){
@@ -1283,7 +1299,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   const PERSONAS = [
     {
-      name:'Southern', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85,
+      name:'Big Country', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85,
       intros: makeRotator(["Alright partner,", "Well now,", "Here we go,", "Listen here,", "Alright, alright,", "Okay now,"]),
       outros: makeRotator(["Go get her.", "That's the play, partner.", "Now go on and hit it.", "Let's see it.", "Go on now.", "There you go."]),
       speak(f){
@@ -1315,7 +1331,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Sports Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05,
+      name:'Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05,
       intros: makeRotator(["And here we go —", "Big moment here —", "Folks, this is the shot —", "Here's the situation —", "All eyes on this one —", "Here we are —"]),
       outros: makeRotator(["Let's go!", "This could be the shot of the day!", "Here we go, folks!", "Let's see what he's got!", "This is the moment!", "Unbelievable opportunity here!"]),
       speak(f){
@@ -1442,7 +1458,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
 
       // Wording still varies by persona (item 11's architecture) — but the voice itself
-      // is locked to a single one (Southern's settings) across all five, per request.
+      // is locked to a single one (Big Country's settings) across all five, per request.
       const voiceSource = PERSONAS[0];
       const utter = new SpeechSynthesisUtterance(text);
       const voices = window.speechSynthesis.getVoices();

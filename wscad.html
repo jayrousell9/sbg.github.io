@@ -63,7 +63,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .hole-name-sm{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-semibold); font-size:15px; color:var(--parchment); line-height:1.3; }
   .hole-tag-sm{ font-family:'Urbanist',sans-serif; font-weight:400; font-style:italic; font-size:11px; color:var(--parchment-dim); opacity:.8; }
   .chips{ display:flex; gap:6px; margin-top:5px; flex-wrap:wrap; }
-  .chip{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:11px; padding:3px 8px; border-radius:20px; letter-spacing:.02em; background:rgba(255,255,255,.14); color:var(--parchment); }
+  .chip{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-medium); font-size:11px; padding:3px 8px; border-radius:20px; letter-spacing:.02em; background:rgba(255,255,255,.14); color:var(--parchment); display:inline-flex; align-items:center; gap:5px; }
+  .tee-dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; display:inline-block; }
   .chip.big{ font-weight:var(--fw-bold); letter-spacing:-0.01em; background:var(--flag); color:#fff; }
 
   .caddie-card{ background:var(--parchment); border-radius:14px; padding:12px 16px; box-shadow:0 8px 24px rgba(0,0,0,.28); }
@@ -95,7 +96,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .mode-btn.active{ background:var(--flag); color:#fff; border-color:var(--flag); font-weight:var(--fw-semibold); }
   .mode-btn.active[data-mode="target"]{ background:var(--wood); border-color:var(--wood); }
   .mode-btn.active[data-mode="me"]{ background:var(--slope); border-color:var(--slope); }
-  #golfMap{ height:260px; border-radius:10px; overflow:hidden; border:1px solid rgba(35,41,30,.15); position:relative; z-index:1; }
+  #golfMap{ height:455px; border-radius:10px; overflow:hidden; border:1px solid rgba(35,41,30,.15); position:relative; z-index:1; }
   .divicon-marker{ filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
   .divicon-user{ width:14px; height:14px; border-radius:50%; background:#6E8E88; border:2px solid #fff; box-shadow:0 0 0 4px rgba(110,142,136,.3); }
   .live-stats{ display:flex; gap:10px; margin-top:10px; }
@@ -174,8 +175,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   /* ---- modal ---- */
   .modal-backdrop{ position:fixed; inset:0; background:rgba(30,37,28,.75); display:none; align-items:flex-end; justify-content:center; z-index:9999; }
   .modal-backdrop.open{ display:flex; }
-  .modal{ background:var(--parchment); width:100%; max-width:480px; border-radius:18px 18px 0 0; max-height:82vh; overflow-y:auto; padding:18px 18px 24px; }
-  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .modal{ background:var(--parchment); width:100%; max-width:480px; border-radius:18px 18px 0 0; max-height:82vh; overflow-y:auto; padding:0 18px 24px; }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; position:sticky; top:0; background:var(--parchment); padding:18px 0 10px; z-index:10; }
   .modal-title{ font-family:'Urbanist',sans-serif; font-weight:var(--fw-bold); font-size:19px; letter-spacing:-0.01em; }
   .modal-close{ font-family:'Urbanist',sans-serif; font-size:12px; background:none; border:1px solid rgba(35,41,30,.25); border-radius:20px; padding:5px 11px; cursor:pointer; }
   .modal-sub{ font-weight:var(--fw-light); font-size:11.5px; color:var(--ink-soft); margin-bottom:14px; }
@@ -217,20 +218,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="sticky-top" id="stickyTop">
     <div class="header-row">
       <div class="brand">Wooden Sticks<small>Caddie Book · Uxbridge, ON</small></div>
-      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-        <button class="clubs-btn" id="openOptionsBtn">Options</button>
-        <span class="map-caption" id="holePositionHint" style="color:var(--parchment-dim); opacity:.75;">Hole 1 of 3 · swipe</span>
-      </div>
+      <button class="clubs-btn" id="openOptionsBtn">Set up</button>
     </div>
     <div class="hole-strip">
       <div class="hole-num-sm" id="holeNumChip">1</div>
       <div class="hole-meta-sm">
         <div class="hole-name-sm" id="holeNameChip">Church Pews <span class="hole-tag-sm" id="holeTagChip">— inspired by Oakmont</span></div>
         <div class="chips">
-          <span class="chip" id="teeColorChip">Black tee</span>
+          <span class="chip" id="teeColorChip"><span class="tee-dot" id="teeColorDot"></span><span id="teeColorName">Oak</span></span>
           <span class="chip" id="parChip">PAR 4</span>
           <span class="chip" id="hcpChip">HCP 4</span>
-          <span class="chip big" id="ov-yards">451y</span>
+          <span class="chip" id="ov-yards">451y</span>
         </div>
       </div>
     </div>
@@ -337,7 +335,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
   </div>
-  <div class="disclaimer">Yardages, par &amp; handicap from Wooden Sticks' official scorecard. Landing zone is yours to set. Hazard distances, green contours, hole-video match, shot-advisor wind math, and live obstacle tracking are estimated/unverified — prototype for Holes 1–3 only. Wind compass heading accuracy depends on your device's sensors; voice caddie uses your device's built-in text-to-speech voices, not real people's voices.</div>
+  <div class="disclaimer">Yardages, par &amp; handicap from Wooden Sticks' official scorecard. Landing zone is yours to set. Hazard distances, green contours, hole-video match, shot-advisor wind math, and live obstacle tracking are estimated/unverified — prototype for Holes 1–3 only. Wind compass heading accuracy depends on your device's sensors.</div>
 </div>
 
 <!-- ===================== OPTIONS MODAL ===================== -->
@@ -348,7 +346,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button class="modal-close" id="closeOptionsBtn">Done</button>
     </div>
     <div class="modal-sub">Set these once — they apply across the round.</div>
-    <div class="map-caption" id="storageStatus" style="margin-bottom:10px; padding:8px 10px; border-radius:8px; background:rgba(35,41,30,.06);">Checking storage…</div>
 
     <div class="opt-section">
       <div class="section-label"><span class="label-title">Location &amp; sensors</span></div>
@@ -360,7 +357,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <label class="switch-label" for="compassSwitch">Enable compass</label>
         <label class="pill-switch"><input type="checkbox" id="compassSwitch"><span class="pill-slider"></span></label>
       </div>
-      <div class="map-caption" style="margin-top:6px;">Turn these on once. The first time, your browser will ask permission — after that, they stay on for every hole while you're on the course.</div>
     </div>
 
     <div class="opt-section">
@@ -371,14 +367,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="opt-section">
       <div class="section-label"><span class="label-title">Caddie voice</span></div>
       <select id="personaSelect" class="voice-select" style="width:100%;"></select>
-      <div class="map-caption" id="personaDesc" style="margin-top:6px;">Fictional caddie characters, not real people.</div>
     </div>
 
     <div class="opt-section">
-      <div class="section-label"><span class="label-title">My clubs</span></div>
-      <div class="modal-sub" style="margin-bottom:8px;">Average carry distance (yards) for each club. Leave blank to skip.</div>
+      <div class="section-label"><span class="label-title">What's in the bag</span></div>
       <div id="clubRows"></div>
       <button class="action-btn" id="addClubBtn" style="margin-top:10px;">Add another club</button>
+    </div>
+
+    <div class="opt-section">
+      <div class="map-caption" id="storageStatus" style="padding:8px 10px; border-radius:8px; background:rgba(35,41,30,.06);">Checking storage…</div>
     </div>
   </div>
 </div>
@@ -533,12 +531,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const yards = currentHole().yards[selectedTee];
     if(chip && yards) chip.textContent = yards + 'y';
 
-    const teeColorChip = document.getElementById('teeColorChip');
-    if(teeColorChip){
-      teeColorChip.textContent = tee.label + ' tee';
-      teeColorChip.style.background = tee.color;
-      teeColorChip.style.color = tee.textOn || '#fff';
-      teeColorChip.style.border = tee.border ? `1px solid ${tee.border}` : 'none';
+    const teeColorDot = document.getElementById('teeColorDot');
+    const teeColorName = document.getElementById('teeColorName');
+    if(teeColorDot && teeColorName){
+      teeColorDot.style.background = tee.color;
+      if(tee.border) teeColorDot.style.border = `1px solid ${tee.border}`; else teeColorDot.style.border = 'none';
+      teeColorName.textContent = tee.name;
     }
 
     if(userMarker && pinMarker) updateObstacleTracking();
@@ -582,12 +580,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const tagEl = document.getElementById('holeTagChip');
     const parEl = document.getElementById('parChip');
     const hcpEl = document.getElementById('hcpChip');
-    const posEl = document.getElementById('holePositionHint');
     if(numEl) numEl.textContent = h.number;
     if(nameEl && tagEl){ nameEl.childNodes[0].nodeValue = h.name + ' '; tagEl.textContent = '— ' + h.tag; }
     if(parEl) parEl.textContent = 'PAR ' + h.par;
     if(hcpEl) hcpEl.textContent = 'HCP ' + h.hcp;
-    if(posEl) posEl.textContent = `Hole ${currentHoleIndex+1} of ${HOLES.length} · swipe`;
     renderObstaclesList();
     renderGreenDiagram();
     applyTee();

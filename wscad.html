@@ -297,20 +297,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="section-label"><span class="label-title">Green &amp; surrounds <span class="est-badge">Estimated</span></span><button class="toggle-text" type="button">Hide</button></div>
       <div class="card-body">
         <svg class="green-diagram" viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">
-          <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
-          <ellipse cx="170" cy="105" rx="80" ry="60" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
-          <ellipse cx="185" cy="120" rx="58" ry="42" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
-          <ellipse cx="198" cy="132" rx="36" ry="25" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
-          <ellipse cx="95" cy="150" rx="26" ry="16" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-15 95 150)"/>
-          <ellipse cx="235" cy="70" rx="22" ry="14" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(20 235 70)"/>
-          <line x1="222" y1="80" x2="128" y2="140" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
-          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
-          <line x1="175" y1="95" x2="175" y2="72" stroke="#23291E" stroke-width="1.5"/>
-          <path d="M175 72 L192 78 L175 84 Z" fill="#7C6A40"/>
-          <ellipse cx="215" cy="155" rx="20" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <text id="greenMissLabel" x="215" y="182" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle">safe miss</text>
-          <text id="greenAvoidLabel" x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid</text>
-          <text id="greenAvoidLongLabel" x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle">avoid (long)</text>
+          <g id="greenDiagramInner">
+            <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
+            <ellipse cx="170" cy="105" rx="80" ry="60" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+            <ellipse cx="185" cy="120" rx="58" ry="42" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+            <ellipse cx="198" cy="132" rx="36" ry="25" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+            <ellipse cx="95" cy="150" rx="26" ry="16" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-15 95 150)"/>
+            <ellipse cx="235" cy="70" rx="22" ry="14" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(20 235 70)"/>
+            <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+            <line x1="222" y1="80" x2="128" y2="140" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+            <line x1="175" y1="95" x2="175" y2="72" stroke="#23291E" stroke-width="1.5"/>
+            <path d="M175 72 L192 78 L175 84 Z" fill="#7C6A40"/>
+            <ellipse cx="215" cy="155" rx="20" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <text id="greenMissLabel" x="215" y="182" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+            <text id="greenAvoidLabel" x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+            <text id="greenAvoidLongLabel" x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          </g>
         </svg>
         <div class="map-caption" id="greenFallLineCaption" style="margin-top:8px;">Fall: <b>Back-right → Front-left</b><br>Safe miss: <b>Right</b> &nbsp;·&nbsp; Avoid: <b>Left</b><br>The green runs hard toward the front-left bunker — a shot that starts right and works back in is the safer play.</div>
       </div>
@@ -465,7 +467,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         fall:'Back-right → Front-left',
         safeMiss:'Right',
         avoidMiss:'Left',
-        note:'The green runs hard toward the front-left bunker — a shot that starts right and works back in is the safer play. Confirmed by the "Church Pews" bunkering pulling misses left.'
+        note:'The green runs hard toward the front-left bunker — a shot that starts right and works back in is the safer play. Confirmed by the "Church Pews" bunkering pulling misses left.',
+        diagramSVG:`
+          <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
+          <ellipse cx="170" cy="105" rx="80" ry="60" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="185" cy="120" rx="58" ry="42" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="198" cy="132" rx="36" ry="25" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="95" cy="150" rx="26" ry="16" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-15 95 150)"/>
+          <ellipse cx="235" cy="70" rx="22" ry="14" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(20 235 70)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="222" y1="80" x2="128" y2="140" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="175" y1="95" x2="175" y2="72" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M175 72 L192 78 L175 84 Z" fill="#7C6A40"/>
+          <ellipse cx="215" cy="155" rx="20" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="215" y="182" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="95" y="185" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="235" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
       },
       videoId:'bV1UaLcXcmE',
       obstacles:[
@@ -486,7 +503,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         fall:'Back → Front',
         safeMiss:'Front',
         avoidMiss:'Long / Back-right',
-        note:'Shallow green with a back-right bunker as its main defense — anything long brings the sand into play. Short is a far easier up-and-down than long.'
+        note:'Shallow green with a back-right bunker as its main defense — anything long brings the sand into play. Short is a far easier up-and-down than long.',
+        diagramSVG:`
+          <path d="M140 260 L200 260 L190 150 L150 150 Z" fill="#DCE7C8"/>
+          <ellipse cx="170" cy="105" rx="70" ry="55" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="170" cy="110" rx="50" ry="38" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="170" cy="112" rx="30" ry="22" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="222" cy="78" rx="24" ry="15" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(25 222 78)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="170" y1="55" x2="170" y2="145" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="170" y1="108" x2="170" y2="85" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M170 85 L187 91 L170 97 Z" fill="#7C6A40"/>
+          <ellipse cx="170" cy="158" rx="26" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="170" y="180" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="222" y="100" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="170" y="48" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
       },
       videoId:'ACjiSTb1jaY',
       obstacles:[
@@ -506,7 +537,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         fall:'Back → Front, toward the water',
         safeMiss:'Long',
         avoidMiss:'Short (water)',
-        note:'Shallow, well-bunkered green with water guarding the entire front, mirroring the real Golden Bell — never take less than enough club, and long is always the safer miss.'
+        note:'Shallow, well-bunkered green with water guarding the entire front, mirroring the real Golden Bell — never take less than enough club, and long is always the safer miss.',
+        diagramSVG:`
+          <path d="M140 260 L200 260 L190 195 L150 195 Z" fill="#DCE7C8"/>
+          <path d="M100 175 Q170 155 240 175 L240 195 Q170 178 100 195 Z" fill="#7FA8C9" stroke="#5C87AC" stroke-width="1.5"/>
+          <ellipse cx="170" cy="115" rx="72" ry="50" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="170" cy="118" rx="52" ry="34" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="170" cy="120" rx="32" ry="20" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="112" cy="150" rx="20" ry="13" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-20 112 150)"/>
+          <ellipse cx="200" cy="70" rx="20" ry="13" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(15 200 70)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="170" y1="72" x2="170" y2="150" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="170" y1="118" x2="170" y2="95" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M170 95 L187 101 L170 107 Z" fill="#7C6A40"/>
+          <ellipse cx="170" cy="80" rx="30" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="170" y="60" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="170" y="188" font-family="Urbanist, sans-serif" font-size="9" fill="#5C87AC" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="200" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
       },
       videoId:'8GydiSnjVfU',
       obstacles:[
@@ -574,9 +621,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 
   function renderGreenDiagram(){
-    // Single source of truth: currentHole().green. Nothing here retains or falls back to
-    // another hole's values — every field is re-read fresh on every call.
+    // Single source of truth: currentHole().green. The diagram markup itself is swapped
+    // wholesale per hole (shape, hazards, fall arrow, safe/avoid zones all differ) — nothing
+    // here retains or falls back to another hole's geometry or text.
     const g = currentHole().green;
+    const diagramWrap = document.getElementById('greenDiagramInner');
+    if(diagramWrap && g.diagramSVG) diagramWrap.innerHTML = g.diagramSVG;
+
+    // re-query: the innerHTML swap above just destroyed the old label nodes
     const missEl = document.getElementById('greenMissLabel');
     const avoidEl = document.getElementById('greenAvoidLabel');
     const avoidLongEl = document.getElementById('greenAvoidLongLabel');
@@ -1315,7 +1367,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Influencer', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2,
+      name:'Smoking Hot Chick', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2,
       intros: makeRotator(["Okay babe,", "Alright hun,", "Here's the deal,", "Listen up,", "Okay, okay,", "Check it out,"]),
       outros: makeRotator(["Go show 'em how it's done.", "Now go get it, tiger.", "You've got this.", "Go make it happen.", "Let's see that swing.", "Impress me."]),
       speak(f){

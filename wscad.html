@@ -337,7 +337,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
   </div>
-  <div class="disclaimer">Yardages, par &amp; handicap from Wooden Sticks' official scorecard. Landing zone is yours to set. Hazard distances, green contours, hole-video match, shot-advisor wind math, and live obstacle tracking are estimated/unverified — prototype for Holes 1–3 only. Wind compass heading accuracy depends on your device's sensors.</div>
+  <div class="disclaimer">Yardages, par &amp; handicap from Wooden Sticks' official scorecard. Landing zone is yours to set. Hazard distances, green contours, hole-video match, shot-advisor wind math, and live obstacle tracking are estimated/unverified — prototype for the front nine (Holes 1–9) only. Wind compass heading accuracy depends on your device's sensors.</div>
 </div>
 
 <!-- ===================== OPTIONS MODAL ===================== -->
@@ -560,6 +560,214 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         { id:'creek', title:'Water, front of green', desc:'runs the entire width short of the putting surface — the defining hazard of the hole.', tipsMid:178, type:'water' },
         { id:'bunkerFL', title:'Bunker, front-left', desc:'guards the shallow front-left shelf.', tipsMid:182, type:'bunker' },
         { id:'bunkerBack', title:'Bunker, back', desc:'a longer miss finds sand instead of trouble.', tipsMid:190, type:'bunker' }
+      ]
+    },
+    {
+      number:4, name:'Azalea', tag:'inspired by #13 Augusta National',
+      par:5, hcp:10,
+      yards:{ oak:510, maple:495, birch:482, pine:472, cedar:472, spruce:370 },
+      teeShotTip:'Draw it around the corner — the fairway bends left toward the creek.',
+      approachTip:'Lay up short of the creek unless you can carry it — the green is well guarded, just like the real 13th.',
+      aimTip:'Favour the right side off the tee to open the best angle for your layup or your go at the green.',
+      green:{
+        fall:'Right → Left, toward the creek',
+        safeMiss:'Right',
+        avoidMiss:'Left',
+        note:'Water runs along the front-left of the green, guarded further by bunkers back-right — mirroring the real Azalea. A miss right leaves a straightforward look; left brings the creek into play.',
+        diagramSVG:`
+          <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
+          <path d="M90 100 Q75 150 95 200 Q105 230 130 245 L150 235 Q120 210 112 175 Q108 140 118 105 Z" fill="#7FA8C9" stroke="#5C87AC" stroke-width="1.5"/>
+          <ellipse cx="175" cy="115" rx="75" ry="55" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="185" cy="118" rx="54" ry="38" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="192" cy="120" rx="34" ry="22" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="228" cy="90" rx="20" ry="13" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(20 228 90)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="220" y1="110" x2="140" y2="122" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="195" y1="108" x2="195" y2="85" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M195 85 L212 91 L195 97 Z" fill="#7C6A40"/>
+          <ellipse cx="222" cy="145" rx="22" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="222" y="168" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="105" y="195" font-family="Urbanist, sans-serif" font-size="9" fill="#5C87AC" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="228" y="72" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
+      },
+      videoId:'ci-tKYGdh2Q',
+      obstacles:[
+        { id:'creek', title:'Creek, crossing the fairway', desc:'cuts across around 235–260y from the tips — the defining feature of the dogleg.', tipsMid:245, type:'water' },
+        { id:'treesL', title:'Trees, left corner', desc:'guard the inside of the dogleg — cutting the corner brings them into play.', tipsMid:220, type:'tree' },
+        { id:'greenBunkers', title:'Greenside bunkers, back and right', desc:'guard the putting surface on a shot at the green in two.', tipsMid:495, type:'bunker' }
+      ]
+    },
+    {
+      number:5, name:'Meadowlark', tag:'original design',
+      par:4, hcp:12,
+      yards:{ oak:331, maple:319, birch:315, pine:268, cedar:268, spruce:228 },
+      teeShotTip:'A short par 4 — favour the fairway center, this sets up a simple wedge in.',
+      approachTip:'Take dead aim, the green accepts a mid-iron well.',
+      aimTip:'One of the more forgiving tee shots on the course — no need to force anything here.',
+      green:{
+        fall:'Left → Right',
+        safeMiss:'Left',
+        avoidMiss:'Right',
+        note:'The green tilts away from a right-side bunker — a miss left leaves an easy up-and-down, while right brings the sand and a tougher angle back.',
+        diagramSVG:`
+          <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
+          <ellipse cx="170" cy="110" rx="76" ry="56" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="160" cy="115" rx="55" ry="40" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="152" cy="118" rx="34" ry="24" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="228" cy="120" rx="24" ry="15" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-10 228 120)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="120" y1="100" x2="205" y2="120" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="155" y1="105" x2="155" y2="82" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M155 82 L172 88 L155 94 Z" fill="#7C6A40"/>
+          <ellipse cx="112" cy="135" rx="22" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="112" y="158" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="228" y="142" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="170" y="48" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
+      },
+      videoId:'W9JcKGl7XfE',
+      obstacles:[
+        { id:'fwbunkerR', title:'Fairway bunker, right side', desc:'catches a pushed drive around 190–215y.', tipsMid:200, type:'bunker' },
+        { id:'treesL', title:'Trees, left side', desc:'line the hole from tee to green.', tipsMid:150, type:'tree' },
+        { id:'greenBunkerR', title:'Greenside bunker, right', desc:'the main defense on a short approach.', tipsMid:315, type:'bunker' }
+      ]
+    },
+    {
+      number:6, name:'Long Iron', tag:'original design',
+      par:4, hcp:2,
+      yards:{ oak:458, maple:448, birch:422, pine:385, cedar:340, spruce:270 },
+      teeShotTip:'The hardest hole on the front — favour left-center, trouble waits right the whole way.',
+      approachTip:'A long approach into a well-protected green — take extra club and aim center, this isn\'t a pin-hunting green.',
+      aimTip:'Handicap 2 for a reason — a good bogey is a fine result here.',
+      green:{
+        fall:'Back → Front',
+        safeMiss:'Short',
+        avoidMiss:'Long',
+        note:'The green falls away hard beyond the back edge — short of the hole is a manageable two-putt, but anything long leaves a fast, difficult chip back down the slope.',
+        diagramSVG:`
+          <path d="M140 260 L200 260 L190 150 L150 150 Z" fill="#DCE7C8"/>
+          <ellipse cx="170" cy="120" rx="74" ry="52" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="170" cy="122" rx="52" ry="36" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="170" cy="124" rx="32" ry="22" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="170" cy="62" rx="26" ry="14" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="170" y1="68" x2="170" y2="150" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="170" y1="120" x2="170" y2="97" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M170 97 L187 103 L170 109 Z" fill="#7C6A40"/>
+          <ellipse cx="170" cy="180" rx="28" ry="13" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="170" y="200" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="170" y="42" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="200" y="62" font-family="Urbanist, sans-serif" font-size="8" fill="#7E8568" text-anchor="middle"></text>`
+      },
+      videoId:'g9z78-aBEqg',
+      obstacles:[
+        { id:'fwbunkerR', title:'Fairway bunkers, right side', desc:'the tightest tee shot on the front, roughly 220–260y.', tipsMid:240, type:'bunker' },
+        { id:'roughR', title:'Heavy rough, right corridor', desc:'runs the length of the hole.', tipsMid:180, type:'tree' },
+        { id:'greenBunkerB', title:'Greenside bunker, back', desc:'guards a long approach into a well-protected green.', tipsMid:440, type:'bunker' }
+      ]
+    },
+    {
+      number:7, name:'Foxglove', tag:'original design',
+      par:4, hcp:6,
+      yards:{ oak:398, maple:387, birch:384, pine:346, cedar:346, spruce:303 },
+      teeShotTip:'Favour the right side off the tee to open the best angle in.',
+      approachTip:'A mid-iron approach — the green slopes away, so take enough club rather than coming up short.',
+      aimTip:'Position over power off this tee — the fairway rewards accuracy more than length.',
+      green:{
+        fall:'Right → Left',
+        safeMiss:'Right',
+        avoidMiss:'Left',
+        note:'A left-side bunker and a green that leans away from it make left the tougher miss — favour right and let the slope feed the ball back toward the hole.',
+        diagramSVG:`
+          <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
+          <ellipse cx="170" cy="108" rx="78" ry="58" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="158" cy="115" rx="56" ry="40" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="150" cy="120" rx="34" ry="24" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="102" cy="135" rx="24" ry="15" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(15 102 135)"/>
+          <ellipse cx="205" cy="70" rx="20" ry="13" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-15 205 70)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="215" y1="90" x2="130" y2="118" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="175" y1="100" x2="175" y2="77" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M175 77 L192 83 L175 89 Z" fill="#7C6A40"/>
+          <ellipse cx="212" cy="135" rx="21" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="212" y="157" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="102" y="160" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="205" y="52" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
+      },
+      videoId:'O7K5IkVZfXc',
+      obstacles:[
+        { id:'fwbunkerL', title:'Fairway bunker, left side', desc:'catches a pulled drive around 200–225y.', tipsMid:212, type:'bunker' },
+        { id:'treesR', title:'Trees, right corridor', desc:'frame the hole from tee to green.', tipsMid:180, type:'tree' },
+        { id:'greenBunkerB', title:'Greenside bunker, back', desc:'catches anything hit long.', tipsMid:385, type:'bunker' }
+      ]
+    },
+    {
+      number:8, name:'Skipping Stone', tag:'original design',
+      par:3, hcp:18,
+      yards:{ oak:230, maple:206, birch:192, pine:179, cedar:152, spruce:152 },
+      teeShotTip:'The longest par 3 on the front, but the easiest handicap hole on the course — big, receptive green, so take enough club and swing easy.',
+      approachTip:'Middle of the green is a fine target — there\'s plenty of room to work with here.',
+      aimTip:'A confidence-builder — trust the number and commit.',
+      green:{
+        fall:'Back → Front',
+        safeMiss:'Center',
+        avoidMiss:'Short-left',
+        note:'A big, forgiving green for a par 3 this length — the main danger is coming up short-left into the bunker rather than anything around the putting surface itself.',
+        diagramSVG:`
+          <path d="M120 260 L220 260 L200 175 L140 175 Z" fill="#DCE7C8"/>
+          <ellipse cx="170" cy="130" rx="72" ry="52" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="170" cy="132" rx="52" ry="36" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="170" cy="134" rx="32" ry="22" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="108" cy="155" rx="22" ry="14" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-15 108 155)"/>
+          <ellipse cx="232" cy="100" rx="20" ry="13" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(15 232 100)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="170" y1="85" x2="170" y2="160" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="170" y1="132" x2="170" y2="109" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M170 109 L187 115 L170 121 Z" fill="#7C6A40"/>
+          <ellipse cx="170" cy="135" rx="24" ry="16" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="170" y="163" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="108" y="178" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="232" y="82" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
+      },
+      videoId:'3m2MK-nSkos',
+      obstacles:[
+        { id:'bunkerFL', title:'Bunker, front-left', desc:'guards the front of a large, receptive green.', tipsMid:212, type:'bunker' },
+        { id:'bunkerBR', title:'Bunker, back-right', desc:'catches a long miss.', tipsMid:225, type:'bunker' }
+      ]
+    },
+    {
+      number:9, name:'Pine Valley', tag:'inspired by Pine Valley',
+      par:5, hcp:8,
+      yards:{ oak:548, maple:525, birch:515, pine:478, cedar:444, spruce:369 },
+      teeShotTip:'Split the pines off the tee — trouble waits on both sides, just like the real Pine Valley.',
+      approachTip:'A three-shot hole for most — lay up short of the cross bunkers and leave yourself a full, clean wedge.',
+      aimTip:'Target golf the whole way up — pick your line and commit, there\'s no bailout corridor here.',
+      green:{
+        fall:'Back-left → Front-right',
+        safeMiss:'Right',
+        avoidMiss:'Left',
+        note:'A deep, severe bunker complex guards the left of the green — true to Pine Valley\'s reputation, a miss left is a bogey (or worse) waiting to happen. Right is the only real miss.',
+        diagramSVG:`
+          <path d="M110 260 L230 260 L200 150 L140 150 Z" fill="#DCE7C8"/>
+          <ellipse cx="60" cy="130" rx="26" ry="70" fill="#2F4A34"/>
+          <ellipse cx="280" cy="130" rx="26" ry="70" fill="#2F4A34"/>
+          <ellipse cx="172" cy="112" rx="76" ry="55" fill="#BFE0A6" stroke="#5F8A4A" stroke-width="2"/>
+          <ellipse cx="180" cy="118" rx="55" ry="38" fill="none" stroke="#A9CE8C" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="188" cy="122" rx="34" ry="22" fill="none" stroke="#95BE79" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <ellipse cx="100" cy="115" rx="30" ry="20" fill="#E9DCB8" stroke="#7E8568" stroke-width="1.5" transform="rotate(-10 100 115)"/>
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6A40"/></marker></defs>
+          <line x1="130" y1="75" x2="215" y2="130" stroke="#7C6A40" stroke-width="3" marker-end="url(#arrow)"/>
+          <line x1="192" y1="112" x2="192" y2="89" stroke="#23291E" stroke-width="1.5"/>
+          <path d="M192 89 L209 95 L192 101 Z" fill="#7C6A40"/>
+          <ellipse cx="225" cy="140" rx="22" ry="14" fill="none" stroke="#6E8E88" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text id="greenMissLabel" x="225" y="163" font-family="Urbanist, sans-serif" font-size="9" fill="#6E8E88" text-anchor="middle"></text>
+          <text id="greenAvoidLabel" x="100" y="140" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>
+          <text id="greenAvoidLongLabel" x="172" y="50" font-family="Urbanist, sans-serif" font-size="9" fill="#7E8568" text-anchor="middle"></text>`
+      },
+      videoId:'rEX6Yf7aF3k',
+      obstacles:[
+        { id:'crossbunkers', title:'Cross bunkers, layup zone', desc:'pinch the fairway around 350–380y, forcing a precise layup.', tipsMid:365, type:'bunker' },
+        { id:'pinesLR', title:'Pines, both sides', desc:'a true target-golf corridor the whole way up, à la Pine Valley.', tipsMid:200, type:'tree' },
+        { id:'greenBunkerL', title:'Deep bunker complex, left of green', desc:'the defining hazard on the approach — a severe miss left.', tipsMid:530, type:'bunker' }
       ]
     }
   ];
@@ -1367,7 +1575,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Influencer', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2,
+      name:'Smoking Hot Chick', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2,
       intros: makeRotator(["Okay babe,", "Alright hun,", "Here's the deal,", "Listen up,", "Okay, okay,", "Check it out,"]),
       outros: makeRotator(["Go show 'em how it's done.", "Now go get it, tiger.", "You've got this.", "Go make it happen.", "Let's see that swing.", "Impress me."]),
       speak(f){

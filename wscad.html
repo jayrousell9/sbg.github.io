@@ -1879,7 +1879,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   const PERSONAS = [
     {
-      name:'Big Country', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85,
+      name:'Big Country', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85, gender:'male',
       intros: makeRotator(["Alright partner,", "Well now,", "Here we go,", "Listen here,", "Alright, alright,", "Okay now,"]),
       outros: makeRotator(["Go get her.", "That's the play, partner.", "Now go on and hit it.", "Let's see it.", "Go on now.", "There you go."]),
       speak(f){
@@ -1895,7 +1895,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Influencer', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2,
+      name:'Influencer', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2, gender:'female',
       intros: makeRotator(["Okay babe,", "Alright hun,", "Here's the deal,", "Listen up,", "Okay, okay,", "Check it out,"]),
       outros: makeRotator(["Go show 'em how it's done.", "Now go get it, tiger.", "You've got this.", "Go make it happen.", "Let's see that swing.", "Impress me."]),
       speak(f){
@@ -1911,7 +1911,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05,
+      name:'Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05, gender:'male',
       intros: makeRotator(["And here we go —", "Big moment here —", "Folks, this is the shot —", "Here's the situation —", "All eyes on this one —", "Here we are —"]),
       outros: makeRotator(["Let's go!", "This could be the shot of the day!", "Here we go, folks!", "Let's see what he's got!", "This is the moment!", "Unbelievable opportunity here!"]),
       speak(f){
@@ -1927,7 +1927,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Party Guy', tag:'Fun, enthusiastic, guys-weekend energy.', rate:1.15, pitch:1.1,
+      name:'Party Guy', tag:'Fun, enthusiastic, guys-weekend energy.', rate:1.15, pitch:1.1, gender:'male',
       intros: makeRotator(["Yoooo,", "Alright boys,", "Dude, check it,", "Okay okay,", "Let's gooo,", "Big dawg,"]),
       outros: makeRotator(["Let's rip it!", "Send it!", "Let's get a beer after this one.", "Big swing energy, let's go!", "Absolute unit, let's go!", "LFG."]),
       speak(f){
@@ -1943,7 +1943,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     },
     {
-      name:'Best Friend', tag:'Relaxed, supportive — knows your game.', rate:0.98, pitch:0.98,
+      name:'Best Friend', tag:'Relaxed, supportive — knows your game.', rate:0.98, pitch:0.98, gender:'male',
       intros: makeRotator(["Okay so,", "Alright,", "Here's what I'm seeing,", "So,", "Alright man,", "Here's the read,"]),
       outros: makeRotator(["You've got this.", "Trust it.", "Go make a good swing.", "You know this shot.", "Let's see it.", "You're good here."]),
       speak(f){
@@ -1959,6 +1959,83 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   ];
   let selectedPersonaIdx = 0;
+
+  // ---------------- per-persona voice selection (device/browser-driven, gender-preferred) ----------------
+  // Scores every voice speechSynthesis.getVoices() actually returns on THIS device. English
+  // strongly preferred, then a gender-name-pattern match, then non-novelty/local/default as
+  // tiebreakers. No voice name is ever hard-coded, and nothing here assumes iOS/Android/desktop.
+  const MALE_NAME_HINTS = ['male','david','mark','daniel','alex','fred','tom','james','george','ryan','guy','matthew','aaron','arthur','oliver','thomas','gordon','eddy','reed','daniel','fred','rishi'];
+  const FEMALE_NAME_HINTS = ['female','samantha','victoria','karen','moira','tessa','fiona','susan','zira','hazel','catherine','emma','olivia','ava','sara','lisa','allison','joanna','salli','kimberly','kate','serena','martha','flo','nicky','veena','tessa'];
+  const NOVELTY_NAME_HINTS = ['whisper','bells','organ','bad news','bahh','bubbles','albert','jester','trinoids','zarvox','wobble','deranged','cellos','pipe','superstar','junior','grandma','grandpa','good news','boing'];
+
+  function scoreVoiceForGender(voice, preferGender){
+    const name = (voice.name || '').toLowerCase();
+    const lang = (voice.lang || '').toLowerCase();
+    let score = 0;
+    if(lang.startsWith('en')) score += 100; else score -= 50;
+    const isMale = MALE_NAME_HINTS.some(n => name.includes(n));
+    const isFemale = FEMALE_NAME_HINTS.some(n => name.includes(n));
+    if(preferGender === 'male' && isMale) score += 40;
+    if(preferGender === 'female' && isFemale) score += 40;
+    if(preferGender === 'male' && isFemale) score -= 15;
+    if(preferGender === 'female' && isMale) score -= 15;
+    if(NOVELTY_NAME_HINTS.some(n => name.includes(n))) score -= 80;
+    if(voice.localService) score += 5;
+    if(voice.default) score += 3;
+    return score;
+  }
+
+  const resolvedVoiceCache = {}; // personaIdx -> SpeechSynthesisVoice, rebuilt if voice list changes
+  let lastVoiceListLength = -1;
+
+  function pickVoiceForPersona(personaIdx){
+    if(!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if(!voices || !voices.length) return null;
+
+    if(voices.length !== lastVoiceListLength){
+      // voice list changed since we last resolved anything (including the common case of
+      // it loading in late via onvoiceschanged) — clear cached picks so we re-score fresh.
+      Object.keys(resolvedVoiceCache).forEach(k => delete resolvedVoiceCache[k]);
+      lastVoiceListLength = voices.length;
+    }
+    if(resolvedVoiceCache[personaIdx]) return resolvedVoiceCache[personaIdx];
+
+    const persona = PERSONAS[personaIdx] || PERSONAS[0];
+    const gender = persona.gender || 'male';
+
+    // A previously-saved voice is only trusted if it still exists in THIS device's list —
+    // otherwise (new device/browser/voice pack) we fall through and re-score automatically.
+    let chosen = null;
+    try{
+      const saved = JSON.parse(window.localStorage.getItem('woodenSticksCaddie:personaVoice:' + personaIdx) || 'null');
+      if(saved && saved.name){
+        chosen = voices.find(v => v.name === saved.name && v.lang === saved.lang) || null;
+      }
+    }catch(e){}
+
+    if(!chosen){
+      const ranked = [...voices].sort((a,b) => scoreVoiceForGender(b, gender) - scoreVoiceForGender(a, gender));
+      chosen = ranked[0] || voices.find(v => v.default) || voices[0] || null;
+      if(chosen){
+        try{ window.localStorage.setItem('woodenSticksCaddie:personaVoice:' + personaIdx, JSON.stringify({ name: chosen.name, lang: chosen.lang })); }catch(e){}
+      }
+    }
+    resolvedVoiceCache[personaIdx] = chosen;
+    return chosen;
+  }
+
+  function speakForPersona(personaIdx, text){
+    if(!('speechSynthesis' in window)) return;
+    const persona = PERSONAS[personaIdx] || PERSONAS[0];
+    const utter = new SpeechSynthesisUtterance(text);
+    const voice = pickVoiceForPersona(personaIdx);
+    if(voice) utter.voice = voice;
+    utter.rate = persona.rate;
+    utter.pitch = persona.pitch;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
+  }
 
   function updatePersonaLabel(){
     const label = document.getElementById('currentPersonaLabel');
@@ -1976,6 +2053,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       updatePersonaDesc();
       updatePersonaLabel();
       try{ await storageAPI.set('app:personaIndex', String(selectedPersonaIdx)); }catch(e){}
+      // Preview the persona's actual voice using an existing short phrase already in the
+      // code (the wind-compass club-change line) — no new phrase invented, no separate
+      // "Test Voice" control.
+      speakForPersona(selectedPersonaIdx, 'Take one more club');
     });
     updatePersonaDesc();
   }
@@ -1983,7 +2064,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const desc = document.getElementById('personaDesc');
     if(!desc) return;
     const p = PERSONAS[selectedPersonaIdx];
-    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. All five personalities speak in the same voice — only the wording changes between them.`;
+    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. Each personality automatically uses the best-matching voice available on this device.`;
   }
   if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged = updatePersonaDesc; }
 
@@ -2037,16 +2118,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const f = factsFor(r);
       const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
 
-      // Wording still varies by persona (item 11's architecture) — but the voice itself
-      // is locked to a single one (Big Country's settings) across all five, per request.
-      const voiceSource = PERSONAS[0];
-      const utter = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      if(voices.length) utter.voice = voices[0];
-      utter.rate = voiceSource.rate;
-      utter.pitch = voiceSource.pitch;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utter);
+      // Each persona speaks in its own device-matched voice (gender-preferred, scored from
+      // whatever speechSynthesis.getVoices() actually returns on this device) at that
+      // persona's own rate/pitch. No persona's voice or rate/pitch controls another's.
+      speakForPersona(idx, text);
     }catch(e){
       alert('Could not read summary: ' + e.message);
     }finally{

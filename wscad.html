@@ -1379,7 +1379,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     return L.divIcon({ className:'', html:`<div class="divicon-marker" style="width:${size}px;height:${size}px;">${html}</div>`, iconSize:[size,size], iconAnchor:[size/2,size/2] });
   }
   const dotSvg = (hex) => `<div style="width:100%;height:100%;border-radius:50%;background:${hex};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.45);"></div>`;
-  const pinIcon = divIcon(dotSvg('#7C6A40'), 22);
+  // Pin marker: a red flag. The flagpole's base (where it meets the ground) is the exact
+  // pixel the map coordinate is anchored to — not the icon's center — so the marked point is
+  // precisely where the pole touches down, matching how a real flagstick marks its spot.
+  const PIN_FLAG_W = 22, PIN_FLAG_H = 30, PIN_FLAG_BASE_X = 5, PIN_FLAG_BASE_Y = 28;
+  const pinFlagSvg = `
+    <svg width="${PIN_FLAG_W}" height="${PIN_FLAG_H}" viewBox="0 0 ${PIN_FLAG_W} ${PIN_FLAG_H}" xmlns="http://www.w3.org/2000/svg" style="display:block; filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));">
+      <line x1="${PIN_FLAG_BASE_X}" y1="${PIN_FLAG_BASE_Y}" x2="${PIN_FLAG_BASE_X}" y2="3" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round"/>
+      <path d="M${PIN_FLAG_BASE_X} 3 L${PIN_FLAG_W-1} 8 L${PIN_FLAG_BASE_X} 13 Z" fill="#C0392B" stroke="#8F2A1F" stroke-width="0.5"/>
+      <ellipse cx="${PIN_FLAG_BASE_X}" cy="${PIN_FLAG_BASE_Y}" rx="3" ry="1.6" fill="rgba(0,0,0,.28)"/>
+    </svg>`;
+  const pinIcon = L.divIcon({ className:'', html:pinFlagSvg, iconSize:[PIN_FLAG_W,PIN_FLAG_H], iconAnchor:[PIN_FLAG_BASE_X,PIN_FLAG_BASE_Y] });
   const targetIcon = divIcon(dotSvg('#7E8568'), 16);
   const userIcon = L.divIcon({ className:'', html:'<div class="divicon-user"></div>', iconSize:[14,14], iconAnchor:[7,7] });
 

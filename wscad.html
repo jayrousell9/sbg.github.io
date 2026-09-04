@@ -1203,7 +1203,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     currentHoleIndex = ((newIndex % HOLES.length) + HOLES.length) % HOLES.length;
     animateHoleChange(dx, () => {
       renderHoleChrome();
-      if(golfMap){ golfMap.setView([44.0957,-79.1242], 18); loadMarkersForCurrentHole(); }
+      if(golfMap) loadMarkersForCurrentHole(); // this itself re-fits the viewport to whatever points exist on the new hole
     });
     try{ await storageAPI.set('app:currentHole', String(currentHoleIndex)); }catch(e){}
   }
@@ -1393,9 +1393,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   const targetIcon = divIcon(dotSvg('#7E8568'), 16);
   const userIcon = L.divIcon({ className:'', html:'<div class="divicon-user"></div>', iconSize:[14,14], iconAnchor:[7,7] });
 
+  const COURSE_DEFAULT_CENTER = [44.0957, -79.1242];
+  const COURSE_DEFAULT_ZOOM = 18;
+
+  // Single source of truth for map viewport: whatever points currently exist ARE the
+  // desired view. No hard-coded default is used once any point is selected.
+  function fitMapToSelectedPoints(){
+    if(!golfMap) return;
+    const points = [];
+    if(pinMarker) points.push(pinMarker.getLatLng());
+    if(targetMarker) points.push(targetMarker.getLatLng());
+    if(userMarker) points.push(userMarker.getLatLng());
+
+    if(points.length === 0){
+      golfMap.setView(COURSE_DEFAULT_CENTER, COURSE_DEFAULT_ZOOM);
+    } else if(points.length === 1){
+      golfMap.setView(points[0], COURSE_DEFAULT_ZOOM);
+    } else {
+      golfMap.fitBounds(L.latLngBounds(points), { padding:[40,40] });
+    }
+  }
+
   function initGolfMap(){
     if(typeof L === 'undefined' || document.getElementById('golfMap')._leaflet_id) return;
-    golfMap = L.map('golfMap', { zoomControl:true }).setView([44.0957,-79.1242], 18);
+    golfMap = L.map('golfMap', { zoomControl:true }).setView(COURSE_DEFAULT_CENTER, COURSE_DEFAULT_ZOOM);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 21,
       attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
@@ -1414,6 +1435,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(userMarker) userMarker.setLatLng(e.latlng); else userMarker = L.marker(e.latlng, {icon:userIcon}).addTo(golfMap);
         try{ await storageAPI.set(holeKey('myLocation'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
       }
+      fitMapToSelectedPoints();
       recalcLiveStats();
     });
 
@@ -1442,6 +1464,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(m && m.value){ const c = JSON.parse(m.value); userMarker = L.marker([c.lat,c.lon], {icon:userIcon}).addTo(golfMap); }
       }catch(e){}
     }
+    fitMapToSelectedPoints();
     recalcLiveStats();
   }
 
@@ -1550,7 +1573,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         const pos = await getPosition();
         const latlng = [pos.latitude, pos.longitude];
         if(userMarker) userMarker.setLatLng(latlng); else userMarker = L.marker(latlng, {icon:userIcon}).addTo(golfMap);
-        if(golfMap) golfMap.panTo(latlng);
+        fitMapToSelectedPoints();
         recalcLiveStats();
       }catch(e){
         if(!silent) alert('Could not get your location: ' + e.message);

@@ -1910,6 +1910,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     };
   }
 
+  // ---------------- voice-only distance selection (max 3, no green detail, no wind narration) ----------------
+  // The visible Caddie Read card still shows everything via factsFor() above — this only
+  // trims what actually gets SPOKEN, since audio is heard sequentially and needs to stay short.
+  // Priority: 1) location→target  2) location→pin (dropped if target is set AND pin > 300y)
+  // 3) one wind-adjusted "plays" number for whichever of target/pin is primary, only if the
+  // adjustment is actually meaningful. Never more than 3 items; never green front/mid/back;
+  // never a spoken wind description.
+  function buildVoiceDistances(f){
+    const list = [];
+    if(f.hasTarget) list.push({ type:'target', value:f.target });
+    const pinExcluded = f.hasTarget && f.pin !== null && f.pin > 300;
+    if(f.hasPin && !pinExcluded) list.push({ type:'pin', value:f.pin });
+    if(list.length < 3 && f.showsPlaying){
+      if(f.hasTarget) list.push({ type:'plays', value:f.targetPlaying });
+      else if(f.hasPin && !pinExcluded) list.push({ type:'plays', value:f.pinPlaying });
+    }
+    return list.slice(0,3);
+  }
+
   const PERSONAS = [
     {
       name:'Big Country', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85, gender:'male',
@@ -1920,10 +1939,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}, partner.`);
         else if(!f.hasClubs) parts.push(`Get your clubs into Options and I'll give you a number.`);
         if(f.tip) parts.push(f.tip);
-        if(f.windLine) parts.push(`Wind's ${f.windLine}.`);
-        if(f.hasTarget) parts.push(`She's playin' about ${f.showsPlaying?f.targetPlaying:f.target} to your spot.`);
-        if(f.hasPin) parts.push(`${f.showsPlaying?f.pinPlaying:f.pin} to the flag.`);
-        if(f.showGreen) parts.push(`Front's ${f.green.front}, back's ${f.green.back}.`);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`She's playin' about ${d.value} to your spot.`);
+          else if(d.type==='pin') parts.push(`${d.value} to the flag.`);
+          else if(d.type==='plays') parts.push(`Plays about ${d.value}.`);
+        });
         return parts.join(' ');
       }
     },
@@ -1936,10 +1956,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(f.hasClubs && f.club) parts.push(`Go with the ${f.club}.`);
         else if(!f.hasClubs) parts.push(`Add your clubs in Options so I can actually help you.`);
         if(f.tip) parts.push(f.tip);
-        if(f.windLine) parts.push(`Wind's ${f.windLine}, by the way.`);
-        if(f.hasTarget) parts.push(`${f.target} to your spot, playing ${f.showsPlaying?f.targetPlaying:f.target}.`);
-        if(f.hasPin) parts.push(`${f.pin} to the pin, playing ${f.showsPlaying?f.pinPlaying:f.pin}.`);
-        if(f.showGreen) parts.push(`Green runs front ${f.green.front}, back ${f.green.back}.`);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`${d.value} to your spot.`);
+          else if(d.type==='pin') parts.push(`${d.value} to the pin.`);
+          else if(d.type==='plays') parts.push(`Playing ${d.value}.`);
+        });
         return parts.join(' ');
       }
     },
@@ -1949,13 +1970,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       outros: makeRotator(["Let's go!", "This could be the shot of the day!", "Here we go, folks!", "Let's see what he's got!", "This is the moment!", "Unbelievable opportunity here!"]),
       speak(f){
         const parts = [];
-        if(f.hasPin) parts.push(`We've got ${f.pin} to the pin.`);
-        if(f.hasPin && f.showsPlaying) parts.push(`Plays ${f.pinPlaying}.`);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`We've got ${d.value} to the target.`);
+          else if(d.type==='pin') parts.push(`${d.value} to the pin.`);
+          else if(d.type==='plays') parts.push(`Plays ${d.value}.`);
+        });
         if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}.`);
         else if(!f.hasClubs) parts.push(`No clubs on file — get those into Options!`);
         if(f.tip) parts.push(f.tip);
-        if(f.windLine) parts.push(`Wind is ${f.windLine}.`);
-        if(f.showGreen) parts.push(`Green plays front ${f.green.front}, back ${f.green.back}.`);
         return parts.join(' ');
       }
     },
@@ -1968,10 +1990,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         if(f.hasClubs && f.club) parts.push(`Grab the ${f.club}!`);
         else if(!f.hasClubs) parts.push(`Bro, you gotta add your clubs in Options first.`);
         if(f.tip) parts.push(f.tip);
-        if(f.windLine) parts.push(`Wind's ${f.windLine}!`);
-        if(f.hasTarget) parts.push(`${f.target} to your spot, plays ${f.showsPlaying?f.targetPlaying:f.target}!`);
-        if(f.hasPin) parts.push(`${f.pin} to the stick, plays ${f.showsPlaying?f.pinPlaying:f.pin}!`);
-        if(f.showGreen) parts.push(`Green's front ${f.green.front}, back ${f.green.back}!`);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`${d.value} to your spot!`);
+          else if(d.type==='pin') parts.push(`${d.value} to the stick!`);
+          else if(d.type==='plays') parts.push(`Plays ${d.value}!`);
+        });
         return parts.join(' ');
       }
     },
@@ -1981,12 +2004,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       outros: makeRotator(["You've got this.", "Trust it.", "Go make a good swing.", "You know this shot.", "Let's see it.", "You're good here."]),
       speak(f){
         const parts = [];
-        if(f.hasPin) parts.push(`${f.pin} to the pin${f.showsPlaying?`, but it's playing ${f.pinPlaying}`:''}.`);
+        const distLines = (f.voiceDistances||[]).map(d => {
+          if(d.type==='target') return `${d.value} to your spot`;
+          if(d.type==='pin') return `${d.value} to the pin`;
+          return `playing ${d.value}`;
+        });
+        if(distLines.length) parts.push(distLines.join(', ') + '.');
         if(f.hasClubs && f.club) parts.push(`I'd take the ${f.club}${f.tip?`, and `+f.tip.charAt(0).toLowerCase()+f.tip.slice(1):''}`);
         else { if(f.tip) parts.push(f.tip); if(!f.hasClubs) parts.push(`Add your clubs in Options and I'll be able to give you a real number.`); }
-        if(f.windLine) parts.push(`Wind's ${f.windLine}.`);
-        if(f.hasTarget) parts.push(`${f.target} to your spot, plays ${f.showsPlaying?f.targetPlaying:f.target}.`);
-        if(f.showGreen) parts.push(`Front's ${f.green.front}, back's ${f.green.back}.`);
         return parts.join(' ');
       }
     }
@@ -2149,6 +2174,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const idx = selectedPersonaIdx;
       const persona = PERSONAS[idx] || PERSONAS[0];
       const f = factsFor(r);
+      f.voiceDistances = buildVoiceDistances(f); // capped/filtered set, used only for what's spoken
       const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
 
       // Each persona speaks in its own device-matched voice (gender-preferred, scored from

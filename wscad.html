@@ -257,8 +257,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="golfMap"></div>
         <div class="map-caption" id="locHint" style="margin-top:8px;">Turn on "Use my location" in Options to get live distances here.</div>
 
+        <div style="margin-top:10px;">
+          <div class="switch-row">
+            <label class="switch-label" for="showPinSwitch">Show Pin</label>
+            <label class="pill-switch"><input type="checkbox" id="showPinSwitch" checked><span class="pill-slider"></span></label>
+          </div>
+          <div class="switch-row">
+            <label class="switch-label" for="showTargetSwitch">Show Target</label>
+            <label class="pill-switch"><input type="checkbox" id="showTargetSwitch" checked><span class="pill-slider"></span></label>
+          </div>
+          <div class="switch-row">
+            <label class="switch-label" for="showMeSwitch">Show My Location</label>
+            <label class="pill-switch"><input type="checkbox" id="showMeSwitch" checked><span class="pill-slider"></span></label>
+          </div>
+        </div>
+
         <button class="details-toggle" type="button" data-details="pintarget">Details</button>
-        <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. With "Use my location" on in Options, your position comes from GPS automatically. Turn it off to plan a hole before you arrive — a "My Location" option appears above so you can drop yourself anywhere on the map and get the same distances and club recommendation you'd get on the course. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically.</div>
+        <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. With "Use my location" on in Options, your position comes from GPS automatically. Turn it off to plan a hole before you arrive — a "My Location" option appears above so you can drop yourself anywhere on the map and get the same distances and club recommendation you'd get on the course. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically. Use the switches below to show or hide each icon on the map — hiding one doesn't remove its saved location, just its icon.</div>
       </div>
     </div>
 
@@ -383,7 +398,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
-<script>
+<script>  // See ARCHITECTURE.md in this repo for the domain map, dependency rules, and
+  // known coupling notes. Change-scope requests (e.g. "CADDIE → READ") should start there.
+
+  // ============================================================
+  // APP — STORAGE
+  // Cross-cutting persistence used by every domain below. Falls back to
+  // localStorage automatically when not running inside Claude's artifact viewer.
+  // ============================================================
+
   // ---------------- tee data ----------------
   // ---------------- storage abstraction ----------------
   // window.storage only exists inside Claude's own artifact viewer. If this file is
@@ -416,32 +439,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       }
     };
   })();
-  if(typeof window.storage === 'undefined'){
-    console.warn('Wooden Sticks Caddie Book: window.storage not found — using localStorage fallback so your data still saves on this device.');
-  }
-  const usingNativeStorage = (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function');
 
-  async function testStorage(){
-    const el = document.getElementById('storageStatus');
-    if(!el) return;
-    try{
-      const testVal = 'ok-' + Date.now();
-      await storageAPI.set('__storagetest__', testVal);
-      const readBack = await storageAPI.get('__storagetest__');
-      if(readBack && readBack.value === testVal){
-        el.textContent = usingNativeStorage
-          ? 'Storage: working (synced by Claude).'
-          : 'Storage: working (saved to this browser only — reopen the SAME link/tab to see your data; a fresh download or a different browser starts empty).';
-        el.style.color = '';
-      } else {
-        el.textContent = 'Storage: wrote data but could not read it back. Something is blocking storage in this browser — try opening the file in Safari/Chrome directly instead of an in-app viewer.';
-        el.style.color = '#7C6A40';
-      }
-    }catch(e){
-      el.textContent = 'Storage: NOT WORKING in this browser (' + e.message + '). Your entries will only last until you close this tab. Try opening the file in Safari or Chrome directly rather than a preview/in-app viewer.';
-      el.style.color = '#7C6A40';
-    }
-  }
+  // ============================================================
+  // CONFIG — constants used across multiple domains
+  // ============================================================
+
+  const GREEN_HALF_DEPTH = 15; // estimated half-depth of green, yards (scorecard total = middle of green)
+
+  const COURSE_DEFAULT_CENTER = [44.0957, -79.1242];
+  const COURSE_DEFAULT_ZOOM = 18;
+
+  // ---------------- My Clubs modal ----------------
+  const DEFAULT_CLUBS = ['Driver','3 Wood','5 Wood','3 Hybrid','4 Iron','5 Iron','6 Iron','7 Iron','8 Iron','9 Iron','PW','GW','SW','LW'];
+
+  // ---------------- per-persona voice selection (device/browser-driven, gender-preferred) ----------------
+  // Scores every voice speechSynthesis.getVoices() actually returns on THIS device. English
+  // strongly preferred, then a gender-name-pattern match, then non-novelty/local/default as
+  // tiebreakers. No voice name is ever hard-coded, and nothing here assumes iOS/Android/desktop.
+  const MALE_NAME_HINTS = ['male','david','mark','daniel','alex','fred','tom','james','george','ryan','guy','matthew','aaron','arthur','oliver','thomas','gordon','eddy','reed','daniel','fred','rishi'];
+  const FEMALE_NAME_HINTS = ['female','samantha','victoria','karen','moira','tessa','fiona','susan','zira','hazel','catherine','emma','olivia','ava','sara','lisa','allison','joanna','salli','kimberly','kate','serena','martha','flo','nicky','veena','tessa'];
+  const NOVELTY_NAME_HINTS = ['whisper','bells','organ','bad news','bahh','bubbles','albert','jester','trinoids','zarvox','wobble','deranged','cellos','pipe','superstar','junior','grandma','grandpa','good news','boing'];
+
+  // ============================================================
+  // COURSE — tee and hole data (pure data, no behavior)
+  // ============================================================
+
 
   const TEES = [
     { key:'oak',    name:'Oak',    label:'Black',  color:'#1a1a1a', textOn:'#fff'    },
@@ -451,7 +473,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     { key:'cedar',  name:'Cedar',  label:'Yellow', color:'#D8B24A', textOn:'#23291E' },
     { key:'spruce', name:'Spruce', label:'Red',    color:'#B23A2E', textOn:'#fff'    }
   ];
-  const GREEN_HALF_DEPTH = 15; // estimated half-depth of green, yards (scorecard total = middle of green)
 
   // Real par/hcp/yardages from Wooden Sticks' official scorecard. Obstacle positions, green
   // detail, and tips are estimates — same honesty standard as the Hole 1 prototype.
@@ -1092,45 +1113,483 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   ];
 
+  // ============================================================
+  // ROUND — authoritative shared state: current hole, selected tee, club bag.
+  // Other domains read/write these directly today (not yet behind a formal
+  // interface) — see ARCHITECTURE.md "Known coupling" for what that means
+  // for future changes.
+  // ============================================================
+
+
   let selectedTee = 'oak';
   let currentHoleIndex = 0;
   function currentHole(){ return HOLES[currentHoleIndex]; }
   function holeKey(suffix){ return 'hole' + currentHole().number + ':' + suffix; }
+  let clubBag = {};
 
-  function buildTeeSelector(){
-    const wrap = document.getElementById('teeSelect');
-    wrap.innerHTML = '';
-    TEES.forEach(t => {
-      const btn = document.createElement('div');
-      btn.className = 'tee-btn' + (t.key===selectedTee ? ' active' : '');
-      btn.dataset.tee = t.key;
-      btn.innerHTML = `<span class="dot" style="background:${t.color};${t.border?`border:1px solid ${t.border}`:''}"></span>${t.name}`;
-      btn.addEventListener('click', () => { selectedTee = t.key; applyTee(); });
-      wrap.appendChild(btn);
+  // ============================================================
+  // MAP — Leaflet map, markers (pin/target/location), visibility, viewport
+  // ============================================================
+
+
+  // ---------------- interactive pin/target map ----------------
+  let golfMap, pinMarker, targetMarker, userMarker;
+  let placeMode = 'pin';
+  const YD_FMT = y => Math.round(y) + 'y';
+
+  function divIcon(html, size){
+    return L.divIcon({ className:'', html:`<div class="divicon-marker" style="width:${size}px;height:${size}px;">${html}</div>`, iconSize:[size,size], iconAnchor:[size/2,size/2] });
+  }
+  const dotSvg = (hex) => `<div style="width:100%;height:100%;border-radius:50%;background:${hex};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.45);"></div>`;
+  // Pin marker: a red flag. The flagpole's base (where it meets the ground) is the exact
+  // pixel the map coordinate is anchored to — not the icon's center — so the marked point is
+  // precisely where the pole touches down, matching how a real flagstick marks its spot.
+  const PIN_FLAG_W = 22, PIN_FLAG_H = 30, PIN_FLAG_BASE_X = 5, PIN_FLAG_BASE_Y = 28;
+  const pinFlagSvg = `
+    <svg width="${PIN_FLAG_W}" height="${PIN_FLAG_H}" viewBox="0 0 ${PIN_FLAG_W} ${PIN_FLAG_H}" xmlns="http://www.w3.org/2000/svg" style="display:block; filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));">
+      <line x1="${PIN_FLAG_BASE_X}" y1="${PIN_FLAG_BASE_Y}" x2="${PIN_FLAG_BASE_X}" y2="3" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round"/>
+      <path d="M${PIN_FLAG_BASE_X} 3 L${PIN_FLAG_W-1} 8 L${PIN_FLAG_BASE_X} 13 Z" fill="#C0392B" stroke="#8F2A1F" stroke-width="0.5"/>
+      <ellipse cx="${PIN_FLAG_BASE_X}" cy="${PIN_FLAG_BASE_Y}" rx="3" ry="1.6" fill="rgba(0,0,0,.28)"/>
+    </svg>`;
+  const pinIcon = L.divIcon({ className:'', html:pinFlagSvg, iconSize:[PIN_FLAG_W,PIN_FLAG_H], iconAnchor:[PIN_FLAG_BASE_X,PIN_FLAG_BASE_Y] });
+  const targetIcon = divIcon(dotSvg('#7E8568'), 16);
+  const userIcon = L.divIcon({ className:'', html:'<div class="divicon-user"></div>', iconSize:[14,14], iconAnchor:[7,7] });
+
+  // ---------------- independent marker visibility (Show Pin / Show Target / Show My Location) ----------------
+  // Pure display layer: hiding a marker only removes its Leaflet layer from the map. The
+  // marker object (and therefore its coordinate, and everything that reads it for distance/
+  // wind/club calculations) is completely untouched — so hiding something never affects
+  // Caddie Read, obstacle tracking, or any other existing functionality, and turning it back
+  // on restores it at the exact same position with no re-placement needed.
+  let showPin = true, showTarget = true, showMyLocation = true;
+
+  function applyMarkerVisibility(){
+    if(!golfMap) return;
+    if(pinMarker){
+      const onMap = golfMap.hasLayer(pinMarker);
+      if(showPin && !onMap) pinMarker.addTo(golfMap);
+      else if(!showPin && onMap) golfMap.removeLayer(pinMarker);
+    }
+    if(targetMarker){
+      const onMap = golfMap.hasLayer(targetMarker);
+      if(showTarget && !onMap) targetMarker.addTo(golfMap);
+      else if(!showTarget && onMap) golfMap.removeLayer(targetMarker);
+    }
+    if(userMarker){
+      const onMap = golfMap.hasLayer(userMarker);
+      if(showMyLocation && !onMap) userMarker.addTo(golfMap);
+      else if(!showMyLocation && onMap) golfMap.removeLayer(userMarker);
+    }
+  }
+
+  function wireVisibilitySwitches(){
+    const pinSw = document.getElementById('showPinSwitch');
+    const targetSw = document.getElementById('showTargetSwitch');
+    const meSw = document.getElementById('showMeSwitch');
+    if(pinSw) pinSw.addEventListener('change', async () => {
+      showPin = pinSw.checked;
+      applyMarkerVisibility();
+      try{ await storageAPI.set('app:showPin', showPin ? '1' : '0'); }catch(e){}
+    });
+    if(targetSw) targetSw.addEventListener('change', async () => {
+      showTarget = targetSw.checked;
+      applyMarkerVisibility();
+      try{ await storageAPI.set('app:showTarget', showTarget ? '1' : '0'); }catch(e){}
+    });
+    if(meSw) meSw.addEventListener('change', async () => {
+      showMyLocation = meSw.checked;
+      applyMarkerVisibility();
+      try{ await storageAPI.set('app:showMyLocation', showMyLocation ? '1' : '0'); }catch(e){}
     });
   }
 
-  function applyTee(){
-    document.querySelectorAll('.tee-btn').forEach(b => b.classList.toggle('active', b.dataset.tee===selectedTee));
+  // Single source of truth for map viewport: whatever points are currently VISIBLE are the
+  // desired view — a hidden point doesn't pull the viewport toward it. No hard-coded default
+  // is used once any visible point exists.
+  function fitMapToSelectedPoints(){
+    if(!golfMap) return;
+    const points = [];
+    if(pinMarker && showPin) points.push(pinMarker.getLatLng());
+    if(targetMarker && showTarget) points.push(targetMarker.getLatLng());
+    if(userMarker && showMyLocation) points.push(userMarker.getLatLng());
 
-    const chip = document.getElementById('ov-yards');
-    const tee = TEES.find(t => t.key===selectedTee);
-    const yards = currentHole().yards[selectedTee];
-    if(chip && yards) chip.textContent = yards + 'y';
+    if(points.length === 0){
+      golfMap.setView(COURSE_DEFAULT_CENTER, COURSE_DEFAULT_ZOOM);
+    } else if(points.length === 1){
+      golfMap.setView(points[0], COURSE_DEFAULT_ZOOM);
+    } else {
+      golfMap.fitBounds(L.latLngBounds(points), { padding:[40,40] });
+    }
+  }
 
-    const teeColorDot = document.getElementById('teeColorDot');
-    const teeColorName = document.getElementById('teeColorName');
-    if(teeColorDot && teeColorName){
-      teeColorDot.style.background = tee.color;
-      if(tee.border) teeColorDot.style.border = `1px solid ${tee.border}`; else teeColorDot.style.border = 'none';
-      teeColorName.textContent = tee.name;
+  function initGolfMap(){
+    if(typeof L === 'undefined' || document.getElementById('golfMap')._leaflet_id) return;
+    golfMap = L.map('golfMap', { zoomControl:true }).setView(COURSE_DEFAULT_CENTER, COURSE_DEFAULT_ZOOM);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 21,
+      attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
+    }).addTo(golfMap);
+
+    wireVisibilitySwitches();
+
+    golfMap.on('click', async (e) => {
+      if(placeMode === 'pin'){
+        if(pinMarker) pinMarker.setLatLng(e.latlng); else pinMarker = L.marker(e.latlng, {icon:pinIcon});
+        try{ await storageAPI.set(holeKey('pin'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+      } else if(placeMode === 'target'){
+        if(targetMarker) targetMarker.setLatLng(e.latlng); else targetMarker = L.marker(e.latlng, {icon:targetIcon});
+        try{ await storageAPI.set(holeKey('target'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+      } else if(placeMode === 'me' && !locationEnabled){
+        // Manual position for off-course planning — feeds into every calculation exactly
+        // like a real GPS fix, since it's the same userMarker everything else reads from.
+        if(userMarker) userMarker.setLatLng(e.latlng); else userMarker = L.marker(e.latlng, {icon:userIcon});
+        try{ await storageAPI.set(holeKey('myLocation'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
+      }
+      applyMarkerVisibility();
+      fitMapToSelectedPoints();
+      recalcLiveStats();
+    });
+
+    loadMarkersForCurrentHole();
+  }
+
+  // Clears the pin/target for whichever hole we're leaving and loads the pin/target
+  // (and, if GPS is off, the saved manual position) for whichever hole we're on now.
+  // userMarker itself is only touched here when location is off — with GPS on, your
+  // real position obviously doesn't change just because you swiped to a different hole.
+  async function loadMarkersForCurrentHole(){
+    if(pinMarker){ if(golfMap.hasLayer(pinMarker)) golfMap.removeLayer(pinMarker); pinMarker = null; }
+    if(targetMarker){ if(golfMap.hasLayer(targetMarker)) golfMap.removeLayer(targetMarker); targetMarker = null; }
+    if(!locationEnabled && userMarker){ if(golfMap.hasLayer(userMarker)) golfMap.removeLayer(userMarker); userMarker = null; }
+    try{
+      const p = await storageAPI.get(holeKey('pin'));
+      if(p && p.value){ const c = JSON.parse(p.value); pinMarker = L.marker([c.lat,c.lon], {icon:pinIcon}); }
+    }catch(e){}
+    try{
+      const t = await storageAPI.get(holeKey('target'));
+      if(t && t.value){ const c = JSON.parse(t.value); targetMarker = L.marker([c.lat,c.lon], {icon:targetIcon}); }
+    }catch(e){}
+    if(!locationEnabled){
+      try{
+        const m = await storageAPI.get(holeKey('myLocation'));
+        if(m && m.value){ const c = JSON.parse(m.value); userMarker = L.marker([c.lat,c.lon], {icon:userIcon}); }
+      }catch(e){}
+    }
+    applyMarkerVisibility();
+    fitMapToSelectedPoints();
+    recalcLiveStats();
+  }
+
+  function updateMeModeVisibility(){
+    const btn = document.getElementById('meModeBtn');
+    if(!btn) return;
+    btn.style.display = locationEnabled ? 'none' : '';
+    if(locationEnabled && placeMode === 'me'){
+      placeMode = 'pin';
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode==='pin'));
+    }
+  }
+
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(btn.dataset.mode === 'me' && locationEnabled) return; // GPS is driving position, manual mode not available
+      placeMode = btn.dataset.mode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b===btn));
+    });
+  });
+
+  function recalcLiveStats(){
+    const locHint = document.getElementById('locHint');
+    updateObstacleTracking();
+    if(!userMarker || !pinMarker){
+      if(locHint) locHint.style.display = userMarker ? 'none' : '';
+      updateCaddieRead(false);
+      return;
+    }
+    if(locHint) locHint.style.display = 'none';
+    updateCaddieRead(true);
+  }
+
+  // ---------------- location & compass permission toggles ----------------
+  let locationEnabled = false, compassEnabled = false, watchId = null;
+
+  function getPosition(){
+    return new Promise((resolve, reject) => {
+      if(!navigator.geolocation){ reject(new Error('Geolocation not supported on this device/browser.')); return; }
+      navigator.geolocation.getCurrentPosition(
+        pos => resolve(pos.coords),
+        err => reject(err),
+        { enableHighAccuracy:true, timeout:12000, maximumAge:0 }
+      );
+    });
+  }
+
+  async function setLocationEnabled(on, silent){
+    locationEnabled = on;
+    try{ await storageAPI.set('app:locationEnabled', on?'1':'0'); }catch(e){}
+    const sw = document.getElementById('locSwitch');
+    updateMeModeVisibility();
+    if(on){
+      if(watchId !== null) return;
+      try{
+        const pos = await getPosition();
+        const latlng = [pos.latitude, pos.longitude];
+        if(userMarker) userMarker.setLatLng(latlng); else userMarker = L.marker(latlng, {icon:userIcon});
+        applyMarkerVisibility();
+        fitMapToSelectedPoints();
+        recalcLiveStats();
+      }catch(e){
+        if(!silent) alert('Could not get your location: ' + e.message);
+        if(sw) sw.checked = false;
+        locationEnabled = false;
+        try{ await storageAPI.set('app:locationEnabled','0'); }catch(err){}
+        updateMeModeVisibility();
+        return;
+      }
+      watchId = navigator.geolocation.watchPosition(pos => {
+        const latlng = [pos.coords.latitude, pos.coords.longitude];
+        if(userMarker) userMarker.setLatLng(latlng); else { userMarker = L.marker(latlng, {icon:userIcon}); applyMarkerVisibility(); }
+        recalcLiveStats();
+      }, () => {}, { enableHighAccuracy:true, maximumAge:10000, timeout:15000 });
+    } else {
+      if(watchId !== null){ navigator.geolocation.clearWatch(watchId); watchId = null; }
+    }
+  }
+
+  document.getElementById('locSwitch').addEventListener('change', (e) => setLocationEnabled(e.target.checked, false));
+
+  // ============================================================
+  // SHOT — pure distance/bearing math. No DOM, no storage, no rendering.
+  // ============================================================
+
+  function toRad(d){ return d*Math.PI/180; }
+  function toDeg(r){ return r*180/Math.PI; }
+  function bearingDeg(lat1,lon1,lat2,lon2){
+    const y = Math.sin(toRad(lon2-lon1)) * Math.cos(toRad(lat2));
+    const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon2-lon1));
+    return (toDeg(Math.atan2(y,x)) + 360) % 360;
+  }
+  function haversineYards(lat1,lon1,lat2,lon2){
+    const R=6371000;
+    const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+    const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    const c=2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return (R*c) * 1.09361;
+  }
+  function compass(deg){
+    const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    return dirs[Math.round(deg/22.5) % 16];
+  }
+
+  // Shared by the Caddie Read engine AND the wind-compass club-delta widget — one
+  // definition of "what are we aiming at" and "what's the wind doing to this shot."
+  function currentShotBearing(){
+    if(userMarker && targetMarker){ const u=userMarker.getLatLng(), t=targetMarker.getLatLng(); return bearingDeg(u.lat,u.lng,t.lat,t.lng); }
+    if(userMarker && pinMarker){ const u=userMarker.getLatLng(), p=pinMarker.getLatLng(); return bearingDeg(u.lat,u.lng,p.lat,p.lng); }
+    return null;
+  }
+
+  function currentRecDistance(){
+    const hasUser = !!userMarker, hasPinMarker = !!pinMarker, hasTargetMarker = !!targetMarker;
+    let pinDist = null;
+    if(hasUser && hasPinMarker){
+      const u=userMarker.getLatLng(), p=pinMarker.getLatLng();
+      pinDist = haversineYards(u.lat,u.lng,p.lat,p.lng);
+    }
+    let targetDist = null;
+    if(hasUser && hasTargetMarker){
+      const u=userMarker.getLatLng(), t=targetMarker.getLatLng();
+      targetDist = haversineYards(u.lat,u.lng,t.lat,t.lng);
+    }
+    let targetToPinDist = null;
+    if(hasPinMarker && hasTargetMarker){
+      const t=targetMarker.getLatLng(), p=pinMarker.getLatLng();
+      targetToPinDist = haversineYards(t.lat,t.lng,p.lat,p.lng);
+    }
+    const teeTotal = currentHole().yards[selectedTee];
+    let recDist, phase;
+    if(targetDist !== null){ recDist = targetDist; phase = 'approach'; }
+    else if(pinDist !== null){ recDist = pinDist; phase = 'approach'; }
+    else { recDist = teeTotal; phase = 'tee'; }
+    return { recDist, phase, pinDist, targetDist, targetToPinDist };
+  }
+
+  // ============================================================
+  // WIND — wind data fetch, compass rendering, wind-based club-change bands
+  // ============================================================
+
+
+  let currentHeading = 0, currentWindDir = null, windSpeedVal = null, windTempVal = null;
+
+  function renderCompass(){
+    // The arrow's rotation is windDir - heading. Wind direction only changes when a new
+    // reading is fetched; the phone's heading is the only other input, so as you rotate,
+    // the arrow visually counter-rotates just enough to keep pointing at the same real-world
+    // direction — it never rotates because of movement or spinning the phone on its own.
+    const windArrowGroup = document.getElementById('windArrowGroup');
+    if(windArrowGroup && currentWindDir!==null){
+      const rel = (currentWindDir - currentHeading + 360) % 360;
+      windArrowGroup.setAttribute('transform', `rotate(${rel} 70 70)`);
+      windArrowGroup.style.opacity = 1;
     }
 
-    if(userMarker && pinMarker) updateObstacleTracking();
-    updateCaddieRead(false);
+    const speedLine = document.getElementById('windSpeedLine');
+    if(speedLine){
+      speedLine.textContent = currentWindDir!==null
+        ? `${Math.round(windSpeedVal)} km/h from ${compass(currentWindDir)}`
+        : '— km/h from —';
+    }
+    const clubLine = document.getElementById('windClubLine');
+    if(clubLine){
+      const phrase = windClubPhrase();
+      clubLine.textContent = phrase !== null ? phrase : (currentWindDir!==null ? 'Set a pin for club impact' : '—');
+    }
 
-    try{ storageAPI.set('app:selectedTee', selectedTee); }catch(e){}
+    const info = document.getElementById('windCompassInfo');
+    if(info){
+      let txt = '';
+      if(windTempVal!==null) txt += `${Math.round(windTempVal)}°C`;
+      if(!compassEnabled) txt += (txt?' · ':'') + 'Enable compass in Options so the arrow stays locked to the real direction as you turn.';
+      if(!txt) txt = 'Tap "Refresh wind" for current conditions.';
+      info.textContent = txt;
+    }
   }
+
+  let cachedWind = null, cachedWindTime = 0;
+
+  async function refreshWind(){
+    const btn = document.getElementById('refreshWindBtn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Fetching…'; }
+    try{
+      const coords = userMarker ? { latitude:userMarker.getLatLng().lat, longitude:userMarker.getLatLng().lng } : await getPosition();
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if(data && data.current){
+        currentWindDir = data.current.wind_direction_10m;
+        windSpeedVal = data.current.wind_speed_10m;
+        windTempVal = data.current.temperature_2m;
+        cachedWind = data.current;
+        cachedWindTime = Date.now();
+        renderCompass();
+        updateCaddieRead(false);
+      }
+    }catch(e){ if(btn) alert('Could not fetch wind: ' + e.message); }
+    finally{ if(btn){ btn.disabled=false; btn.textContent='Refresh wind'; } }
+  }
+  document.getElementById('refreshWindBtn').addEventListener('click', refreshWind);
+
+  function handleOrientation(e){
+    let heading;
+    if(typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
+    else if(e.alpha !== null && e.alpha !== undefined) heading = (360 - e.alpha) % 360;
+    else return;
+    currentHeading = heading;
+    renderCompass();
+  }
+
+  async function setCompassEnabled(on, silent){
+    compassEnabled = on;
+    try{ await storageAPI.set('app:compassEnabled', on?'1':'0'); }catch(e){}
+    const sw = document.getElementById('compassSwitch');
+    if(on){
+      try{
+        if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if(perm !== 'granted') throw new Error('Permission denied.');
+        }
+        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+        window.addEventListener('deviceorientation', handleOrientation, true);
+        if(!cachedWind) refreshWind();
+      }catch(e){
+        if(!silent) alert('Compass not available on this device/browser: ' + e.message);
+        if(sw) sw.checked = false;
+        compassEnabled = false;
+        try{ await storageAPI.set('app:compassEnabled','0'); }catch(err){}
+      }
+    } else {
+      window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
+      window.removeEventListener('deviceorientation', handleOrientation, true);
+      currentHeading = 0;
+      renderCompass();
+    }
+  }
+  document.getElementById('compassSwitch').addEventListener('change', (e) => setCompassEnabled(e.target.checked, false));
+  // "off the left/right" / "into you" / "helping" — relative to the direction of THIS shot,
+  // not just an absolute compass letter. shotBearingDeg is the direction the ball is travelling.
+  function windRelativeDescription(shotBearingDeg, windFromDeg){
+    let diff = ((windFromDeg - shotBearingDeg) + 540) % 360 - 180; // normalized -180..180
+    const abs = Math.abs(diff);
+    if(abs <= 30) return 'into you';
+    if(abs >= 150) return 'helping';
+    return diff > 0 ? 'off the right' : 'off the left';
+  }
+
+  function shouldFetchWind(force){
+    if(!locationEnabled) return false;
+    if(force) return true;
+    if(!cachedWind) return true;
+    return (Date.now() - cachedWindTime) > 60000;
+  }
+
+  async function fetchWindIfDue(force){
+    if(!shouldFetchWind(force)) return;
+    try{
+      const coords = userMarker ? { latitude:userMarker.getLatLng().lat, longitude:userMarker.getLatLng().lng } : await getPosition();
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if(data && data.current){
+        cachedWind = data.current; cachedWindTime = Date.now();
+        currentWindDir = data.current.wind_direction_10m; windSpeedVal = data.current.wind_speed_10m; windTempVal = data.current.temperature_2m;
+        renderCompass();
+      }
+    }catch(e){ /* wind optional */ }
+  }
+  function windComponentKmh(shotBearingDeg){
+    if(!cachedWind || shotBearingDeg===null) return 0;
+    return cachedWind.wind_speed_10m * Math.cos(toRad(cachedWind.wind_direction_10m - shotBearingDeg));
+  }
+  // Headwind hurts more than tailwind helps — this is the one place that asymmetry is applied.
+  function windAdjustmentYards(shotBearingDeg){
+    const comp = windComponentKmh(shotBearingDeg);
+    const compMph = comp * 0.621371;
+    return compMph > 0 ? compMph : compMph * 0.5;
+  }
+  // Wind-based club recommendation, per exact rule set: only recommend a change when the
+  // wind is primarily into or with the shot (within 45° of directly into/away). Crosswind —
+  // and any into/with wind too light to matter — always returns "No club change". Magnitude
+  // uses the effective (cosine-projected) headwind/tailwind component, never total wind speed.
+  function windClubPhrase(){
+    if(!cachedWind) return null;
+    const bearing = currentShotBearing();
+    if(bearing === null) return null;
+
+    let diff = ((cachedWind.wind_direction_10m - bearing) + 540) % 360 - 180; // -180..180
+    const absDiff = Math.abs(diff);
+    if(absDiff > 45 && absDiff < 135) return 'No club change'; // primarily crosswind
+
+    const comp = cachedWind.wind_speed_10m * Math.cos(toRad(diff)); // effective component, positive = into the wind
+
+    if(comp >= 0){
+      if(comp <= 8) return 'No club change';
+      if(comp <= 20) return 'Take one more club';
+      if(comp <= 30) return 'Take two more clubs';
+      return 'Take three more clubs';
+    } else {
+      const t = Math.abs(comp);
+      if(t <= 10) return 'No club change';
+      if(t <= 25) return 'Take one less club';
+      if(t <= 40) return 'Take two less clubs';
+      return 'Take three less clubs';
+    }
+  }
+
+  // ============================================================
+  // CADDIE — decides WHAT to communicate: club recommendation, obstacles,
+  // green info, the Caddie Read card. Does not decide HOW it's spoken (AUDIO).
+  // ============================================================
+
 
   // ---------------- per-hole rendering ----------------
   const OB_MARKER_CLASS = { bunker:'bunker', tree:'tree', water:'water' };
@@ -1167,6 +1626,455 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if(captionEl){
       captionEl.innerHTML = `Fall: <b>${g.fall}</b><br>Safe miss: <b>${g.safeMiss}</b> &nbsp;·&nbsp; Avoid: <b>${g.avoidMiss}</b><br>${g.note}`;
     }
+  }
+
+  function updateObstacleTracking(){
+    if(!userMarker || !pinMarker){
+      const obBadge = document.getElementById('obstaclesBadge');
+      if(obBadge){ obBadge.textContent = 'Estimated'; obBadge.classList.remove('live-badge'); }
+      document.querySelectorAll('.ob-item').forEach(li => {
+        li.classList.remove('passed');
+        const le = li.querySelector('.ob-live');
+        if(le) le.textContent = '';
+      });
+      return;
+    }
+    const u = userMarker.getLatLng(), p = pinMarker.getLatLng();
+    const dPin = haversineYards(u.lat,u.lng,p.lat,p.lng);
+    const total = currentHole().yards[selectedTee];
+    const tipsTotal = currentHole().yards.oak;
+    const distanceCovered = total - dPin;
+    const backOffset = tipsTotal - total;
+
+    const obBadge = document.getElementById('obstaclesBadge');
+    if(obBadge){ obBadge.textContent = 'Live'; obBadge.classList.add('live-badge'); }
+
+    currentHole().obstacles.forEach(ob => {
+      const li = document.querySelector(`.ob-item[data-obid="${ob.id}"]`);
+      if(!li) return;
+      const fromTee = ob.tipsMid - backOffset;
+      const diff = fromTee - distanceCovered;
+      const liveEl = li.querySelector('.ob-live');
+      if(diff <= 5){ li.classList.add('passed'); if(liveEl) liveEl.textContent = ' · passed'; }
+      else { li.classList.remove('passed'); if(liveEl) liveEl.textContent = ` · ~${Math.round(diff)}y ahead`; }
+    });
+  }
+
+  // ---------------- caddie recommendation engine ----------------
+  // Single source of truth. Returns pure structured data — no wording, no voice, no visuals.
+  // Everything else (the visible Caddie Read card, the spoken voice) formats this same object.
+  function pickClub(bag, playingDist){
+    const entries = Object.entries(bag);
+    entries.sort((a,b) => Math.abs(a[1]-playingDist) - Math.abs(b[1]-playingDist));
+    return entries[0];
+  }
+  function clubNoteFor(club, playingDist){
+    const diff = club[1] - playingDist;
+    if(diff >= 8) return 'plenty of club';
+    if(diff <= -8) return 'take one more if it\'s tight';
+    return 'right in your number';
+  }
+
+  function buildCaddieRead(){
+    const { recDist, phase, pinDist, targetDist, targetToPinDist } = currentRecDistance();
+    const shotBearingDeg = currentShotBearing();
+
+    let windLine = null;
+    const adjustment = windAdjustmentYards(shotBearingDeg);
+    if(cachedWind){
+      windLine = shotBearingDeg !== null
+        ? `${Math.round(cachedWind.wind_speed_10m)} km/h ${windRelativeDescription(shotBearingDeg, cachedWind.wind_direction_10m)}`
+        : `${Math.round(cachedWind.wind_speed_10m)} km/h from ${compass(cachedWind.wind_direction_10m)}`;
+    }
+
+    const playingDist = recDist + adjustment;
+    const hasClubs = Object.keys(clubBag).length > 0;
+    let club = null, clubNote = null;
+    if(hasClubs){ club = pickClub(clubBag, playingDist); clubNote = clubNoteFor(club, playingDist); }
+
+    const tip = phase === 'approach' ? currentHole().approachTip : currentHole().teeShotTip;
+
+    const showGreen = pinDist !== null && pinDist < 300;
+    const green = showGreen ? { front: pinDist - GREEN_HALF_DEPTH, middle: pinDist, back: pinDist + GREEN_HALF_DEPTH } : null;
+
+    return {
+      phase, tip, hasClubs, club, clubNote, windLine, adjustment,
+      hasTarget: targetDist !== null, targetDist, targetPlaying: targetDist!==null ? targetDist+adjustment : null,
+      hasPin: pinDist !== null, pinDist, pinPlaying: pinDist!==null ? pinDist+adjustment : null,
+      hasTargetToPin: targetToPinDist !== null, targetToPinDist, targetToPinPlaying: targetToPinDist!==null ? targetToPinDist+adjustment : null,
+      showGreen, green
+    };
+  }
+  function factsFor(r){
+    const showsPlaying = Math.abs(r.adjustment) >= 1;
+    return {
+      hasClubs: r.hasClubs, club: (r.hasClubs && r.club) ? r.club[0] : null, clubNote: r.clubNote,
+      tip: r.tip, windLine: r.windLine, showsPlaying,
+      hasTarget: r.hasTarget, target: r.targetDist!==null ? Math.round(r.targetDist) : null, targetPlaying: r.targetPlaying!==null ? Math.round(r.targetPlaying) : null,
+      hasPin: r.hasPin, pin: r.pinDist!==null ? Math.round(r.pinDist) : null, pinPlaying: r.pinPlaying!==null ? Math.round(r.pinPlaying) : null,
+      hasTargetToPin: r.hasTargetToPin, targetToPin: r.targetToPinDist!==null ? Math.round(r.targetToPinDist) : null, targetToPinPlaying: r.targetToPinPlaying!==null ? Math.round(r.targetToPinPlaying) : null,
+      showGreen: r.showGreen, green: r.green ? {front:Math.round(r.green.front), middle:Math.round(r.green.middle), back:Math.round(r.green.back)} : null
+    };
+  }
+
+  // ---------------- voice-only distance selection (max 3, no green detail, no wind narration) ----------------
+  // The visible Caddie Read card still shows everything via factsFor() above — this only
+  // trims what actually gets SPOKEN, since audio is heard sequentially and needs to stay short.
+  // Priority: 1) location→target  2) location→pin (dropped if target is set AND pin > 300y)
+  // 3) one wind-adjusted "plays" number for whichever of target/pin is primary, only if the
+  // adjustment is actually meaningful. Never more than 3 items; never green front/mid/back;
+  // never a spoken wind description.
+  function buildVoiceDistances(f){
+    const list = [];
+    if(f.hasTarget) list.push({ type:'target', value:f.target });
+    const pinExcluded = f.hasTarget && f.pin !== null && f.pin > 300;
+    if(f.hasPin && !pinExcluded) list.push({ type:'pin', value:f.pin });
+    if(list.length < 3 && f.showsPlaying){
+      if(f.hasTarget) list.push({ type:'plays', value:f.targetPlaying });
+      else if(f.hasPin && !pinExcluded) list.push({ type:'plays', value:f.pinPlaying });
+    }
+    return list.slice(0,3);
+  }
+
+  function updateCaddieRead(forceWindFetch){
+    (async () => {
+      await loadClubs();
+      await fetchWindIfDue(forceWindFetch);
+      const r = buildCaddieRead();
+      const body = document.getElementById('caddieReadBody');
+      if(!body) return;
+
+      const f = factsFor(r);
+      let html = '';
+
+      html += `<div class="caddie-club-row">`;
+      html += `<div>`;
+      if(f.hasPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.pin}y</span> to pin${f.showsPlaying?` — plays <span class="num-strong">${f.pinPlaying}y</span>`:''}</div>`;
+      if(f.hasTarget) html += `<div class="caddie-line-raw"><span class="num-strong">${f.target}y</span> to target${f.showsPlaying?` — plays <span class="num-strong">${f.targetPlaying}y</span>`:''}</div>`;
+      if(f.hasTargetToPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.targetToPin}y</span> target to pin${f.showsPlaying?` — plays <span class="num-strong">${f.targetToPinPlaying}y</span>`:''}</div>`;
+      if(!f.hasPin && !f.hasTarget) html += `<div class="caddie-line-raw">On the tee</div>`;
+      html += `</div>`;
+      html += f.club ? `<div class="caddie-club">${f.club}</div>` : '';
+      html += `</div>`;
+
+      if(f.tip) html += `<div class="caddie-note">${f.tip}</div>`;
+      if(!f.hasClubs) html += `<div class="map-caption" style="margin-top:6px;">Add your clubs in Options for a club call.</div>`;
+      if(f.windLine) html += `<div class="map-caption" style="margin-top:6px;">Wind: ${f.windLine}</div>`;
+
+      if(f.showGreen){
+        html += `<div class="map-caption" style="margin-top:10px; border-top:1px dashed rgba(35,41,30,.14); padding-top:8px; font-weight:var(--fw-medium);">Green distance</div>`;
+        html += `<div class="fmb-row"><span>Front</span><b>${f.green.front}y</b></div>`;
+        html += `<div class="fmb-row"><span>Middle</span><b>${f.green.middle}y</b></div>`;
+        html += `<div class="fmb-row"><span>Back</span><b>${f.green.back}y</b></div>`;
+      }
+      body.innerHTML = html;
+    })();
+  }
+
+  // ============================================================
+  // AUDIO — decides HOW things are spoken: persona wording, voice selection,
+  // text-to-speech playback. Consumes CADDIE's output, never computes its own.
+  // ============================================================
+
+
+  // ---------------- voice caddie ----------------
+  // Architecture note (per your item 11): everything below only FORMATS the structured
+  // data from buildCaddieRead(). No persona ever changes the club, tip, wind math, or
+  // numbers — only how it's said.
+  function shuffleArr(arr){
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+  function makeRotator(list){
+    let queue = [];
+    return function next(){
+      if(queue.length === 0) queue = shuffleArr(list);
+      return queue.pop();
+    };
+  }
+
+  const PERSONAS = [
+    {
+      name:'Big Country', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85, gender:'male',
+      intros: makeRotator(["Alright partner,", "Well now,", "Here we go,", "Listen here,", "Alright, alright,", "Okay now,"]),
+      outros: makeRotator(["Go get her.", "That's the play, partner.", "Now go on and hit it.", "Let's see it.", "Go on now.", "There you go."]),
+      speak(f){
+        const parts = [];
+        if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}, partner.`);
+        else if(!f.hasClubs) parts.push(`Get your clubs into Options and I'll give you a number.`);
+        if(f.tip) parts.push(f.tip);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`She's playin' about ${d.value} to your spot.`);
+          else if(d.type==='pin') parts.push(`${d.value} to the flag.`);
+          else if(d.type==='plays') parts.push(`Plays about ${d.value}.`);
+        });
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Influencer', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2, gender:'female',
+      intros: makeRotator(["Okay babe,", "Alright hun,", "Here's the deal,", "Listen up,", "Okay, okay,", "Check it out,"]),
+      outros: makeRotator(["Go show 'em how it's done.", "Now go get it, tiger.", "You've got this.", "Go make it happen.", "Let's see that swing.", "Impress me."]),
+      speak(f){
+        const parts = [];
+        if(f.hasClubs && f.club) parts.push(`Go with the ${f.club}.`);
+        else if(!f.hasClubs) parts.push(`Add your clubs in Options so I can actually help you.`);
+        if(f.tip) parts.push(f.tip);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`${d.value} to your spot.`);
+          else if(d.type==='pin') parts.push(`${d.value} to the pin.`);
+          else if(d.type==='plays') parts.push(`Playing ${d.value}.`);
+        });
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05, gender:'male',
+      intros: makeRotator(["And here we go —", "Big moment here —", "Folks, this is the shot —", "Here's the situation —", "All eyes on this one —", "Here we are —"]),
+      outros: makeRotator(["Let's go!", "This could be the shot of the day!", "Here we go, folks!", "Let's see what he's got!", "This is the moment!", "Unbelievable opportunity here!"]),
+      speak(f){
+        const parts = [];
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`We've got ${d.value} to the target.`);
+          else if(d.type==='pin') parts.push(`${d.value} to the pin.`);
+          else if(d.type==='plays') parts.push(`Plays ${d.value}.`);
+        });
+        if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}.`);
+        else if(!f.hasClubs) parts.push(`No clubs on file — get those into Options!`);
+        if(f.tip) parts.push(f.tip);
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Party Guy', tag:'Fun, enthusiastic, guys-weekend energy.', rate:1.15, pitch:1.1, gender:'male',
+      intros: makeRotator(["Yoooo,", "Alright boys,", "Dude, check it,", "Okay okay,", "Let's gooo,", "Big dawg,"]),
+      outros: makeRotator(["Let's rip it!", "Send it!", "Let's get a beer after this one.", "Big swing energy, let's go!", "Absolute unit, let's go!", "LFG."]),
+      speak(f){
+        const parts = [];
+        if(f.hasClubs && f.club) parts.push(`Grab the ${f.club}!`);
+        else if(!f.hasClubs) parts.push(`Bro, you gotta add your clubs in Options first.`);
+        if(f.tip) parts.push(f.tip);
+        (f.voiceDistances||[]).forEach(d => {
+          if(d.type==='target') parts.push(`${d.value} to your spot!`);
+          else if(d.type==='pin') parts.push(`${d.value} to the stick!`);
+          else if(d.type==='plays') parts.push(`Plays ${d.value}!`);
+        });
+        return parts.join(' ');
+      }
+    },
+    {
+      name:'Best Friend', tag:'Relaxed, supportive — knows your game.', rate:0.98, pitch:0.98, gender:'male',
+      intros: makeRotator(["Okay so,", "Alright,", "Here's what I'm seeing,", "So,", "Alright man,", "Here's the read,"]),
+      outros: makeRotator(["You've got this.", "Trust it.", "Go make a good swing.", "You know this shot.", "Let's see it.", "You're good here."]),
+      speak(f){
+        const parts = [];
+        const distLines = (f.voiceDistances||[]).map(d => {
+          if(d.type==='target') return `${d.value} to your spot`;
+          if(d.type==='pin') return `${d.value} to the pin`;
+          return `playing ${d.value}`;
+        });
+        if(distLines.length) parts.push(distLines.join(', ') + '.');
+        if(f.hasClubs && f.club) parts.push(`I'd take the ${f.club}${f.tip?`, and `+f.tip.charAt(0).toLowerCase()+f.tip.slice(1):''}`);
+        else { if(f.tip) parts.push(f.tip); if(!f.hasClubs) parts.push(`Add your clubs in Options and I'll be able to give you a real number.`); }
+        return parts.join(' ');
+      }
+    }
+  ];
+  let selectedPersonaIdx = 0;
+
+  function scoreVoiceForGender(voice, preferGender){
+    const name = (voice.name || '').toLowerCase();
+    const lang = (voice.lang || '').toLowerCase();
+    let score = 0;
+    if(lang.startsWith('en')) score += 100; else score -= 50;
+    const isMale = MALE_NAME_HINTS.some(n => name.includes(n));
+    const isFemale = FEMALE_NAME_HINTS.some(n => name.includes(n));
+    if(preferGender === 'male' && isMale) score += 40;
+    if(preferGender === 'female' && isFemale) score += 40;
+    if(preferGender === 'male' && isFemale) score -= 15;
+    if(preferGender === 'female' && isMale) score -= 15;
+    if(NOVELTY_NAME_HINTS.some(n => name.includes(n))) score -= 80;
+    if(voice.localService) score += 5;
+    if(voice.default) score += 3;
+    return score;
+  }
+
+  const resolvedVoiceCache = {}; // personaIdx -> SpeechSynthesisVoice, rebuilt if voice list changes
+  let lastVoiceListLength = -1;
+
+  function pickVoiceForPersona(personaIdx){
+    if(!('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if(!voices || !voices.length) return null;
+
+    if(voices.length !== lastVoiceListLength){
+      // voice list changed since we last resolved anything (including the common case of
+      // it loading in late via onvoiceschanged) — clear cached picks so we re-score fresh.
+      Object.keys(resolvedVoiceCache).forEach(k => delete resolvedVoiceCache[k]);
+      lastVoiceListLength = voices.length;
+    }
+    if(resolvedVoiceCache[personaIdx]) return resolvedVoiceCache[personaIdx];
+
+    const persona = PERSONAS[personaIdx] || PERSONAS[0];
+    const gender = persona.gender || 'male';
+
+    // A previously-saved voice is only trusted if it still exists in THIS device's list —
+    // otherwise (new device/browser/voice pack) we fall through and re-score automatically.
+    let chosen = null;
+    try{
+      const saved = JSON.parse(window.localStorage.getItem('woodenSticksCaddie:personaVoice:' + personaIdx) || 'null');
+      if(saved && saved.name){
+        chosen = voices.find(v => v.name === saved.name && v.lang === saved.lang) || null;
+      }
+    }catch(e){}
+
+    if(!chosen){
+      const ranked = [...voices].sort((a,b) => scoreVoiceForGender(b, gender) - scoreVoiceForGender(a, gender));
+      chosen = ranked[0] || voices.find(v => v.default) || voices[0] || null;
+      if(chosen){
+        try{ window.localStorage.setItem('woodenSticksCaddie:personaVoice:' + personaIdx, JSON.stringify({ name: chosen.name, lang: chosen.lang })); }catch(e){}
+      }
+    }
+    resolvedVoiceCache[personaIdx] = chosen;
+    return chosen;
+  }
+
+  function speakForPersona(personaIdx, text){
+    if(!('speechSynthesis' in window)) return;
+    const persona = PERSONAS[personaIdx] || PERSONAS[0];
+    const utter = new SpeechSynthesisUtterance(text);
+    const voice = pickVoiceForPersona(personaIdx);
+    if(voice) utter.voice = voice;
+    utter.rate = persona.rate;
+    utter.pitch = persona.pitch;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
+  }
+
+  function updatePersonaLabel(){
+    const label = document.getElementById('currentPersonaLabel');
+    const p = PERSONAS[selectedPersonaIdx] || PERSONAS[0];
+    if(label) label.textContent = `Caddie: ${p.name}`;
+  }
+
+  function loadVoices(){
+    const sel = document.getElementById('personaSelect');
+    if(!sel) return;
+    sel.innerHTML = PERSONAS.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('');
+    sel.value = String(selectedPersonaIdx);
+    sel.addEventListener('change', async () => {
+      selectedPersonaIdx = parseInt(sel.value,10);
+      updatePersonaDesc();
+      updatePersonaLabel();
+      try{ await storageAPI.set('app:personaIndex', String(selectedPersonaIdx)); }catch(e){}
+      // Preview the persona's actual voice using an existing short phrase already in the
+      // code (the wind-compass club-change line) — no new phrase invented, no separate
+      // "Test Voice" control.
+      speakForPersona(selectedPersonaIdx, 'Take one more club');
+    });
+    updatePersonaDesc();
+  }
+  function updatePersonaDesc(){
+    const desc = document.getElementById('personaDesc');
+    if(!desc) return;
+    const p = PERSONAS[selectedPersonaIdx];
+    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. Each personality automatically uses the best-matching voice available on this device.`;
+  }
+  if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged = updatePersonaDesc; }
+
+  document.getElementById('readSummaryBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('readSummaryBtn');
+    if(!('speechSynthesis' in window)){ alert('Text-to-speech is not supported on this device/browser.'); return; }
+    btn.disabled = true; btn.textContent = 'Preparing…';
+    try{
+      await loadClubs();
+      await fetchWindIfDue(false);
+      const r = buildCaddieRead();
+      updateCaddieRead(false);
+
+      const idx = selectedPersonaIdx;
+      const persona = PERSONAS[idx] || PERSONAS[0];
+      const f = factsFor(r);
+      f.voiceDistances = buildVoiceDistances(f); // capped/filtered set, used only for what's spoken
+      const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
+
+      // Each persona speaks in its own device-matched voice (gender-preferred, scored from
+      // whatever speechSynthesis.getVoices() actually returns on this device) at that
+      // persona's own rate/pitch. No persona's voice or rate/pitch controls another's.
+      speakForPersona(idx, text);
+    }catch(e){
+      alert('Could not read summary: ' + e.message);
+    }finally{
+      btn.disabled = false; btn.textContent = 'Give me the read';
+    }
+  });
+
+  // ============================================================
+  // UI — Options modal, club bag editor, collapsible cards, hole navigation
+  // chrome, notes, fly-over video. Presentation only.
+  // ============================================================
+
+  if(typeof window.storage === 'undefined'){
+    console.warn('Wooden Sticks Caddie Book: window.storage not found — using localStorage fallback so your data still saves on this device.');
+  }
+  const usingNativeStorage = (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function');
+
+  async function testStorage(){
+    const el = document.getElementById('storageStatus');
+    if(!el) return;
+    try{
+      const testVal = 'ok-' + Date.now();
+      await storageAPI.set('__storagetest__', testVal);
+      const readBack = await storageAPI.get('__storagetest__');
+      if(readBack && readBack.value === testVal){
+        el.textContent = usingNativeStorage
+          ? 'Storage: working (synced by Claude).'
+          : 'Storage: working (saved to this browser only — reopen the SAME link/tab to see your data; a fresh download or a different browser starts empty).';
+        el.style.color = '';
+      } else {
+        el.textContent = 'Storage: wrote data but could not read it back. Something is blocking storage in this browser — try opening the file in Safari/Chrome directly instead of an in-app viewer.';
+        el.style.color = '#7C6A40';
+      }
+    }catch(e){
+      el.textContent = 'Storage: NOT WORKING in this browser (' + e.message + '). Your entries will only last until you close this tab. Try opening the file in Safari or Chrome directly rather than a preview/in-app viewer.';
+      el.style.color = '#7C6A40';
+    }
+  }
+
+  function buildTeeSelector(){
+    const wrap = document.getElementById('teeSelect');
+    wrap.innerHTML = '';
+    TEES.forEach(t => {
+      const btn = document.createElement('div');
+      btn.className = 'tee-btn' + (t.key===selectedTee ? ' active' : '');
+      btn.dataset.tee = t.key;
+      btn.innerHTML = `<span class="dot" style="background:${t.color};${t.border?`border:1px solid ${t.border}`:''}"></span>${t.name}`;
+      btn.addEventListener('click', () => { selectedTee = t.key; applyTee(); });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function applyTee(){
+    document.querySelectorAll('.tee-btn').forEach(b => b.classList.toggle('active', b.dataset.tee===selectedTee));
+
+    const chip = document.getElementById('ov-yards');
+    const tee = TEES.find(t => t.key===selectedTee);
+    const yards = currentHole().yards[selectedTee];
+    if(chip && yards) chip.textContent = yards + 'y';
+
+    const teeColorDot = document.getElementById('teeColorDot');
+    const teeColorName = document.getElementById('teeColorName');
+    if(teeColorDot && teeColorName){
+      teeColorDot.style.background = tee.color;
+      if(tee.border) teeColorDot.style.border = `1px solid ${tee.border}`; else teeColorDot.style.border = 'none';
+      teeColorName.textContent = tee.name;
+    }
+
+    if(userMarker && pinMarker) updateObstacleTracking();
+    updateCaddieRead(false);
+
+    try{ storageAPI.set('app:selectedTee', selectedTee); }catch(e){}
   }
 
   function renderHoleChrome(){
@@ -1262,10 +2170,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       btn.textContent = show ? 'Hide details' : 'Details';
     });
   });
-
-  // ---------------- My Clubs modal ----------------
-  const DEFAULT_CLUBS = ['Driver','3 Wood','5 Wood','3 Hybrid','4 Iron','5 Iron','6 Iron','7 Iron','8 Iron','9 Iron','PW','GW','SW','LW'];
-  let clubBag = {};
 
   function renderClubRows(){
     const wrap = document.getElementById('clubRows');
@@ -1370,476 +2274,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     wrap.appendChild(row);
   });
 
-  // ---------------- interactive pin/target map ----------------
-  let golfMap, pinMarker, targetMarker, userMarker;
-  let placeMode = 'pin';
-  const YD_FMT = y => Math.round(y) + 'y';
-
-  function divIcon(html, size){
-    return L.divIcon({ className:'', html:`<div class="divicon-marker" style="width:${size}px;height:${size}px;">${html}</div>`, iconSize:[size,size], iconAnchor:[size/2,size/2] });
-  }
-  const dotSvg = (hex) => `<div style="width:100%;height:100%;border-radius:50%;background:${hex};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.45);"></div>`;
-  // Pin marker: a red flag. The flagpole's base (where it meets the ground) is the exact
-  // pixel the map coordinate is anchored to — not the icon's center — so the marked point is
-  // precisely where the pole touches down, matching how a real flagstick marks its spot.
-  const PIN_FLAG_W = 22, PIN_FLAG_H = 30, PIN_FLAG_BASE_X = 5, PIN_FLAG_BASE_Y = 28;
-  const pinFlagSvg = `
-    <svg width="${PIN_FLAG_W}" height="${PIN_FLAG_H}" viewBox="0 0 ${PIN_FLAG_W} ${PIN_FLAG_H}" xmlns="http://www.w3.org/2000/svg" style="display:block; filter:drop-shadow(0 1px 2px rgba(0,0,0,.45));">
-      <line x1="${PIN_FLAG_BASE_X}" y1="${PIN_FLAG_BASE_Y}" x2="${PIN_FLAG_BASE_X}" y2="3" stroke="#3A3A3A" stroke-width="2" stroke-linecap="round"/>
-      <path d="M${PIN_FLAG_BASE_X} 3 L${PIN_FLAG_W-1} 8 L${PIN_FLAG_BASE_X} 13 Z" fill="#C0392B" stroke="#8F2A1F" stroke-width="0.5"/>
-      <ellipse cx="${PIN_FLAG_BASE_X}" cy="${PIN_FLAG_BASE_Y}" rx="3" ry="1.6" fill="rgba(0,0,0,.28)"/>
-    </svg>`;
-  const pinIcon = L.divIcon({ className:'', html:pinFlagSvg, iconSize:[PIN_FLAG_W,PIN_FLAG_H], iconAnchor:[PIN_FLAG_BASE_X,PIN_FLAG_BASE_Y] });
-  const targetIcon = divIcon(dotSvg('#7E8568'), 16);
-  const userIcon = L.divIcon({ className:'', html:'<div class="divicon-user"></div>', iconSize:[14,14], iconAnchor:[7,7] });
-
-  const COURSE_DEFAULT_CENTER = [44.0957, -79.1242];
-  const COURSE_DEFAULT_ZOOM = 18;
-
-  // Single source of truth for map viewport: whatever points currently exist ARE the
-  // desired view. No hard-coded default is used once any point is selected.
-  function fitMapToSelectedPoints(){
-    if(!golfMap) return;
-    const points = [];
-    if(pinMarker) points.push(pinMarker.getLatLng());
-    if(targetMarker) points.push(targetMarker.getLatLng());
-    if(userMarker) points.push(userMarker.getLatLng());
-
-    if(points.length === 0){
-      golfMap.setView(COURSE_DEFAULT_CENTER, COURSE_DEFAULT_ZOOM);
-    } else if(points.length === 1){
-      golfMap.setView(points[0], COURSE_DEFAULT_ZOOM);
-    } else {
-      golfMap.fitBounds(L.latLngBounds(points), { padding:[40,40] });
-    }
-  }
-
-  function initGolfMap(){
-    if(typeof L === 'undefined' || document.getElementById('golfMap')._leaflet_id) return;
-    golfMap = L.map('golfMap', { zoomControl:true }).setView(COURSE_DEFAULT_CENTER, COURSE_DEFAULT_ZOOM);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 21,
-      attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
-    }).addTo(golfMap);
-
-    golfMap.on('click', async (e) => {
-      if(placeMode === 'pin'){
-        if(pinMarker) pinMarker.setLatLng(e.latlng); else pinMarker = L.marker(e.latlng, {icon:pinIcon}).addTo(golfMap);
-        try{ await storageAPI.set(holeKey('pin'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
-      } else if(placeMode === 'target'){
-        if(targetMarker) targetMarker.setLatLng(e.latlng); else targetMarker = L.marker(e.latlng, {icon:targetIcon}).addTo(golfMap);
-        try{ await storageAPI.set(holeKey('target'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
-      } else if(placeMode === 'me' && !locationEnabled){
-        // Manual position for off-course planning — feeds into every calculation exactly
-        // like a real GPS fix, since it's the same userMarker everything else reads from.
-        if(userMarker) userMarker.setLatLng(e.latlng); else userMarker = L.marker(e.latlng, {icon:userIcon}).addTo(golfMap);
-        try{ await storageAPI.set(holeKey('myLocation'), JSON.stringify({lat:e.latlng.lat, lon:e.latlng.lng})); }catch(err){}
-      }
-      fitMapToSelectedPoints();
-      recalcLiveStats();
-    });
-
-    loadMarkersForCurrentHole();
-  }
-
-  // Clears the pin/target for whichever hole we're leaving and loads the pin/target
-  // (and, if GPS is off, the saved manual position) for whichever hole we're on now.
-  // userMarker itself is only touched here when location is off — with GPS on, your
-  // real position obviously doesn't change just because you swiped to a different hole.
-  async function loadMarkersForCurrentHole(){
-    if(pinMarker){ golfMap.removeLayer(pinMarker); pinMarker = null; }
-    if(targetMarker){ golfMap.removeLayer(targetMarker); targetMarker = null; }
-    if(!locationEnabled && userMarker){ golfMap.removeLayer(userMarker); userMarker = null; }
-    try{
-      const p = await storageAPI.get(holeKey('pin'));
-      if(p && p.value){ const c = JSON.parse(p.value); pinMarker = L.marker([c.lat,c.lon], {icon:pinIcon}).addTo(golfMap); }
-    }catch(e){}
-    try{
-      const t = await storageAPI.get(holeKey('target'));
-      if(t && t.value){ const c = JSON.parse(t.value); targetMarker = L.marker([c.lat,c.lon], {icon:targetIcon}).addTo(golfMap); }
-    }catch(e){}
-    if(!locationEnabled){
-      try{
-        const m = await storageAPI.get(holeKey('myLocation'));
-        if(m && m.value){ const c = JSON.parse(m.value); userMarker = L.marker([c.lat,c.lon], {icon:userIcon}).addTo(golfMap); }
-      }catch(e){}
-    }
-    fitMapToSelectedPoints();
-    recalcLiveStats();
-  }
-
-  function updateMeModeVisibility(){
-    const btn = document.getElementById('meModeBtn');
-    if(!btn) return;
-    btn.style.display = locationEnabled ? 'none' : '';
-    if(locationEnabled && placeMode === 'me'){
-      placeMode = 'pin';
-      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode==='pin'));
-    }
-  }
-
-  document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if(btn.dataset.mode === 'me' && locationEnabled) return; // GPS is driving position, manual mode not available
-      placeMode = btn.dataset.mode;
-      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b===btn));
-    });
-  });
-
-  function updateObstacleTracking(){
-    if(!userMarker || !pinMarker){
-      const obBadge = document.getElementById('obstaclesBadge');
-      if(obBadge){ obBadge.textContent = 'Estimated'; obBadge.classList.remove('live-badge'); }
-      document.querySelectorAll('.ob-item').forEach(li => {
-        li.classList.remove('passed');
-        const le = li.querySelector('.ob-live');
-        if(le) le.textContent = '';
-      });
-      return;
-    }
-    const u = userMarker.getLatLng(), p = pinMarker.getLatLng();
-    const dPin = haversineYards(u.lat,u.lng,p.lat,p.lng);
-    const total = currentHole().yards[selectedTee];
-    const tipsTotal = currentHole().yards.oak;
-    const distanceCovered = total - dPin;
-    const backOffset = tipsTotal - total;
-
-    const obBadge = document.getElementById('obstaclesBadge');
-    if(obBadge){ obBadge.textContent = 'Live'; obBadge.classList.add('live-badge'); }
-
-    currentHole().obstacles.forEach(ob => {
-      const li = document.querySelector(`.ob-item[data-obid="${ob.id}"]`);
-      if(!li) return;
-      const fromTee = ob.tipsMid - backOffset;
-      const diff = fromTee - distanceCovered;
-      const liveEl = li.querySelector('.ob-live');
-      if(diff <= 5){ li.classList.add('passed'); if(liveEl) liveEl.textContent = ' · passed'; }
-      else { li.classList.remove('passed'); if(liveEl) liveEl.textContent = ` · ~${Math.round(diff)}y ahead`; }
-    });
-  }
-
-  function recalcLiveStats(){
-    const locHint = document.getElementById('locHint');
-    updateObstacleTracking();
-    if(!userMarker || !pinMarker){
-      if(locHint) locHint.style.display = userMarker ? 'none' : '';
-      updateCaddieRead(false);
-      return;
-    }
-    if(locHint) locHint.style.display = 'none';
-    updateCaddieRead(true);
-  }
-
-  // ---------------- location & compass permission toggles ----------------
-  let locationEnabled = false, compassEnabled = false, watchId = null;
-
-  function getPosition(){
-    return new Promise((resolve, reject) => {
-      if(!navigator.geolocation){ reject(new Error('Geolocation not supported on this device/browser.')); return; }
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos.coords),
-        err => reject(err),
-        { enableHighAccuracy:true, timeout:12000, maximumAge:0 }
-      );
-    });
-  }
-  function toRad(d){ return d*Math.PI/180; }
-  function toDeg(r){ return r*180/Math.PI; }
-  function bearingDeg(lat1,lon1,lat2,lon2){
-    const y = Math.sin(toRad(lon2-lon1)) * Math.cos(toRad(lat2));
-    const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lon2-lon1));
-    return (toDeg(Math.atan2(y,x)) + 360) % 360;
-  }
-  function haversineYards(lat1,lon1,lat2,lon2){
-    const R=6371000;
-    const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
-    const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-    const c=2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return (R*c) * 1.09361;
-  }
-  function compass(deg){
-    const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-    return dirs[Math.round(deg/22.5) % 16];
-  }
-
-  async function setLocationEnabled(on, silent){
-    locationEnabled = on;
-    try{ await storageAPI.set('app:locationEnabled', on?'1':'0'); }catch(e){}
-    const sw = document.getElementById('locSwitch');
-    updateMeModeVisibility();
-    if(on){
-      if(watchId !== null) return;
-      try{
-        const pos = await getPosition();
-        const latlng = [pos.latitude, pos.longitude];
-        if(userMarker) userMarker.setLatLng(latlng); else userMarker = L.marker(latlng, {icon:userIcon}).addTo(golfMap);
-        fitMapToSelectedPoints();
-        recalcLiveStats();
-      }catch(e){
-        if(!silent) alert('Could not get your location: ' + e.message);
-        if(sw) sw.checked = false;
-        locationEnabled = false;
-        try{ await storageAPI.set('app:locationEnabled','0'); }catch(err){}
-        updateMeModeVisibility();
-        return;
-      }
-      watchId = navigator.geolocation.watchPosition(pos => {
-        const latlng = [pos.coords.latitude, pos.coords.longitude];
-        if(userMarker) userMarker.setLatLng(latlng); else userMarker = L.marker(latlng, {icon:userIcon}).addTo(golfMap);
-        recalcLiveStats();
-      }, () => {}, { enableHighAccuracy:true, maximumAge:10000, timeout:15000 });
-    } else {
-      if(watchId !== null){ navigator.geolocation.clearWatch(watchId); watchId = null; }
-    }
-  }
-
-  let currentHeading = 0, currentWindDir = null, windSpeedVal = null, windTempVal = null;
-
-  function renderCompass(){
-    // The arrow's rotation is windDir - heading. Wind direction only changes when a new
-    // reading is fetched; the phone's heading is the only other input, so as you rotate,
-    // the arrow visually counter-rotates just enough to keep pointing at the same real-world
-    // direction — it never rotates because of movement or spinning the phone on its own.
-    const windArrowGroup = document.getElementById('windArrowGroup');
-    if(windArrowGroup && currentWindDir!==null){
-      const rel = (currentWindDir - currentHeading + 360) % 360;
-      windArrowGroup.setAttribute('transform', `rotate(${rel} 70 70)`);
-      windArrowGroup.style.opacity = 1;
-    }
-
-    const speedLine = document.getElementById('windSpeedLine');
-    if(speedLine){
-      speedLine.textContent = currentWindDir!==null
-        ? `${Math.round(windSpeedVal)} km/h from ${compass(currentWindDir)}`
-        : '— km/h from —';
-    }
-    const clubLine = document.getElementById('windClubLine');
-    if(clubLine){
-      const phrase = windClubPhrase();
-      clubLine.textContent = phrase !== null ? phrase : (currentWindDir!==null ? 'Set a pin for club impact' : '—');
-    }
-
-    const info = document.getElementById('windCompassInfo');
-    if(info){
-      let txt = '';
-      if(windTempVal!==null) txt += `${Math.round(windTempVal)}°C`;
-      if(!compassEnabled) txt += (txt?' · ':'') + 'Enable compass in Options so the arrow stays locked to the real direction as you turn.';
-      if(!txt) txt = 'Tap "Refresh wind" for current conditions.';
-      info.textContent = txt;
-    }
-  }
-
-  let cachedWind = null, cachedWindTime = 0;
-
-  async function refreshWind(){
-    const btn = document.getElementById('refreshWindBtn');
-    if(btn){ btn.disabled = true; btn.textContent = 'Fetching…'; }
-    try{
-      const coords = userMarker ? { latitude:userMarker.getLatLng().lat, longitude:userMarker.getLatLng().lng } : await getPosition();
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius`;
-      const resp = await fetch(url);
-      const data = await resp.json();
-      if(data && data.current){
-        currentWindDir = data.current.wind_direction_10m;
-        windSpeedVal = data.current.wind_speed_10m;
-        windTempVal = data.current.temperature_2m;
-        cachedWind = data.current;
-        cachedWindTime = Date.now();
-        renderCompass();
-        updateCaddieRead(false);
-      }
-    }catch(e){ if(btn) alert('Could not fetch wind: ' + e.message); }
-    finally{ if(btn){ btn.disabled=false; btn.textContent='Refresh wind'; } }
-  }
-  document.getElementById('refreshWindBtn').addEventListener('click', refreshWind);
-
-  function handleOrientation(e){
-    let heading;
-    if(typeof e.webkitCompassHeading === 'number') heading = e.webkitCompassHeading;
-    else if(e.alpha !== null && e.alpha !== undefined) heading = (360 - e.alpha) % 360;
-    else return;
-    currentHeading = heading;
-    renderCompass();
-  }
-
-  async function setCompassEnabled(on, silent){
-    compassEnabled = on;
-    try{ await storageAPI.set('app:compassEnabled', on?'1':'0'); }catch(e){}
-    const sw = document.getElementById('compassSwitch');
-    if(on){
-      try{
-        if(typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
-          const perm = await DeviceOrientationEvent.requestPermission();
-          if(perm !== 'granted') throw new Error('Permission denied.');
-        }
-        window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-        window.addEventListener('deviceorientation', handleOrientation, true);
-        if(!cachedWind) refreshWind();
-      }catch(e){
-        if(!silent) alert('Compass not available on this device/browser: ' + e.message);
-        if(sw) sw.checked = false;
-        compassEnabled = false;
-        try{ await storageAPI.set('app:compassEnabled','0'); }catch(err){}
-      }
-    } else {
-      window.removeEventListener('deviceorientationabsolute', handleOrientation, true);
-      window.removeEventListener('deviceorientation', handleOrientation, true);
-      currentHeading = 0;
-      renderCompass();
-    }
-  }
-
-  document.getElementById('locSwitch').addEventListener('change', (e) => setLocationEnabled(e.target.checked, false));
-  document.getElementById('compassSwitch').addEventListener('change', (e) => setCompassEnabled(e.target.checked, false));
-
-  // ---------------- caddie recommendation engine ----------------
-  // Single source of truth. Returns pure structured data — no wording, no voice, no visuals.
-  // Everything else (the visible Caddie Read card, the spoken voice) formats this same object.
-  function pickClub(bag, playingDist){
-    const entries = Object.entries(bag);
-    entries.sort((a,b) => Math.abs(a[1]-playingDist) - Math.abs(b[1]-playingDist));
-    return entries[0];
-  }
-  function clubNoteFor(club, playingDist){
-    const diff = club[1] - playingDist;
-    if(diff >= 8) return 'plenty of club';
-    if(diff <= -8) return 'take one more if it\'s tight';
-    return 'right in your number';
-  }
-  // "off the left/right" / "into you" / "helping" — relative to the direction of THIS shot,
-  // not just an absolute compass letter. shotBearingDeg is the direction the ball is travelling.
-  function windRelativeDescription(shotBearingDeg, windFromDeg){
-    let diff = ((windFromDeg - shotBearingDeg) + 540) % 360 - 180; // normalized -180..180
-    const abs = Math.abs(diff);
-    if(abs <= 30) return 'into you';
-    if(abs >= 150) return 'helping';
-    return diff > 0 ? 'off the right' : 'off the left';
-  }
-
-  function shouldFetchWind(force){
-    if(!locationEnabled) return false;
-    if(force) return true;
-    if(!cachedWind) return true;
-    return (Date.now() - cachedWindTime) > 60000;
-  }
-
-  async function fetchWindIfDue(force){
-    if(!shouldFetchWind(force)) return;
-    try{
-      const coords = userMarker ? { latitude:userMarker.getLatLng().lat, longitude:userMarker.getLatLng().lng } : await getPosition();
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius`;
-      const resp = await fetch(url);
-      const data = await resp.json();
-      if(data && data.current){
-        cachedWind = data.current; cachedWindTime = Date.now();
-        currentWindDir = data.current.wind_direction_10m; windSpeedVal = data.current.wind_speed_10m; windTempVal = data.current.temperature_2m;
-        renderCompass();
-      }
-    }catch(e){ /* wind optional */ }
-  }
-
-  // Shared by the Caddie Read engine AND the wind-compass club-delta widget — one
-  // definition of "what are we aiming at" and "what's the wind doing to this shot."
-  function currentShotBearing(){
-    if(userMarker && targetMarker){ const u=userMarker.getLatLng(), t=targetMarker.getLatLng(); return bearingDeg(u.lat,u.lng,t.lat,t.lng); }
-    if(userMarker && pinMarker){ const u=userMarker.getLatLng(), p=pinMarker.getLatLng(); return bearingDeg(u.lat,u.lng,p.lat,p.lng); }
-    return null;
-  }
-  function windComponentKmh(shotBearingDeg){
-    if(!cachedWind || shotBearingDeg===null) return 0;
-    return cachedWind.wind_speed_10m * Math.cos(toRad(cachedWind.wind_direction_10m - shotBearingDeg));
-  }
-  // Headwind hurts more than tailwind helps — this is the one place that asymmetry is applied.
-  function windAdjustmentYards(shotBearingDeg){
-    const comp = windComponentKmh(shotBearingDeg);
-    const compMph = comp * 0.621371;
-    return compMph > 0 ? compMph : compMph * 0.5;
-  }
-  // Wind-based club recommendation, per exact rule set: only recommend a change when the
-  // wind is primarily into or with the shot (within 45° of directly into/away). Crosswind —
-  // and any into/with wind too light to matter — always returns "No club change". Magnitude
-  // uses the effective (cosine-projected) headwind/tailwind component, never total wind speed.
-  function windClubPhrase(){
-    if(!cachedWind) return null;
-    const bearing = currentShotBearing();
-    if(bearing === null) return null;
-
-    let diff = ((cachedWind.wind_direction_10m - bearing) + 540) % 360 - 180; // -180..180
-    const absDiff = Math.abs(diff);
-    if(absDiff > 45 && absDiff < 135) return 'No club change'; // primarily crosswind
-
-    const comp = cachedWind.wind_speed_10m * Math.cos(toRad(diff)); // effective component, positive = into the wind
-
-    if(comp >= 0){
-      if(comp <= 8) return 'No club change';
-      if(comp <= 20) return 'Take one more club';
-      if(comp <= 30) return 'Take two more clubs';
-      return 'Take three more clubs';
-    } else {
-      const t = Math.abs(comp);
-      if(t <= 10) return 'No club change';
-      if(t <= 25) return 'Take one less club';
-      if(t <= 40) return 'Take two less clubs';
-      return 'Take three less clubs';
-    }
-  }
-
-  function currentRecDistance(){
-    const hasUser = !!userMarker, hasPinMarker = !!pinMarker, hasTargetMarker = !!targetMarker;
-    let pinDist = null;
-    if(hasUser && hasPinMarker){
-      const u=userMarker.getLatLng(), p=pinMarker.getLatLng();
-      pinDist = haversineYards(u.lat,u.lng,p.lat,p.lng);
-    }
-    let targetDist = null;
-    if(hasUser && hasTargetMarker){
-      const u=userMarker.getLatLng(), t=targetMarker.getLatLng();
-      targetDist = haversineYards(u.lat,u.lng,t.lat,t.lng);
-    }
-    let targetToPinDist = null;
-    if(hasPinMarker && hasTargetMarker){
-      const t=targetMarker.getLatLng(), p=pinMarker.getLatLng();
-      targetToPinDist = haversineYards(t.lat,t.lng,p.lat,p.lng);
-    }
-    const teeTotal = currentHole().yards[selectedTee];
-    let recDist, phase;
-    if(targetDist !== null){ recDist = targetDist; phase = 'approach'; }
-    else if(pinDist !== null){ recDist = pinDist; phase = 'approach'; }
-    else { recDist = teeTotal; phase = 'tee'; }
-    return { recDist, phase, pinDist, targetDist, targetToPinDist };
-  }
-
-  function buildCaddieRead(){
-    const { recDist, phase, pinDist, targetDist, targetToPinDist } = currentRecDistance();
-    const shotBearingDeg = currentShotBearing();
-
-    let windLine = null;
-    const adjustment = windAdjustmentYards(shotBearingDeg);
-    if(cachedWind){
-      windLine = shotBearingDeg !== null
-        ? `${Math.round(cachedWind.wind_speed_10m)} km/h ${windRelativeDescription(shotBearingDeg, cachedWind.wind_direction_10m)}`
-        : `${Math.round(cachedWind.wind_speed_10m)} km/h from ${compass(cachedWind.wind_direction_10m)}`;
-    }
-
-    const playingDist = recDist + adjustment;
-    const hasClubs = Object.keys(clubBag).length > 0;
-    let club = null, clubNote = null;
-    if(hasClubs){ club = pickClub(clubBag, playingDist); clubNote = clubNoteFor(club, playingDist); }
-
-    const tip = phase === 'approach' ? currentHole().approachTip : currentHole().teeShotTip;
-
-    const showGreen = pinDist !== null && pinDist < 300;
-    const green = showGreen ? { front: pinDist - GREEN_HALF_DEPTH, middle: pinDist, back: pinDist + GREEN_HALF_DEPTH } : null;
-
-    return {
-      phase, tip, hasClubs, club, clubNote, windLine, adjustment,
-      hasTarget: targetDist !== null, targetDist, targetPlaying: targetDist!==null ? targetDist+adjustment : null,
-      hasPin: pinDist !== null, pinDist, pinPlaying: pinDist!==null ? pinDist+adjustment : null,
-      hasTargetToPin: targetToPinDist !== null, targetToPinDist, targetToPinPlaying: targetToPinDist!==null ? targetToPinDist+adjustment : null,
-      showGreen, green
-    };
-  }
-
   // ---------------- video override ----------------
   function extractYouTubeId(input){
     input = input.trim();
@@ -1882,311 +2316,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   });
   notesEl.addEventListener('blur', () => { if(notesStatusEl.textContent === 'tap outside to save') notesStatusEl.textContent = 'saved ✓'; });
 
-  // ---------------- voice caddie ----------------
-  // Architecture note (per your item 11): everything below only FORMATS the structured
-  // data from buildCaddieRead(). No persona ever changes the club, tip, wind math, or
-  // numbers — only how it's said.
-  function shuffleArr(arr){
-    const a = [...arr];
-    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-    return a;
-  }
-  function makeRotator(list){
-    let queue = [];
-    return function next(){
-      if(queue.length === 0) queue = shuffleArr(list);
-      return queue.pop();
-    };
-  }
-  function factsFor(r){
-    const showsPlaying = Math.abs(r.adjustment) >= 1;
-    return {
-      hasClubs: r.hasClubs, club: (r.hasClubs && r.club) ? r.club[0] : null, clubNote: r.clubNote,
-      tip: r.tip, windLine: r.windLine, showsPlaying,
-      hasTarget: r.hasTarget, target: r.targetDist!==null ? Math.round(r.targetDist) : null, targetPlaying: r.targetPlaying!==null ? Math.round(r.targetPlaying) : null,
-      hasPin: r.hasPin, pin: r.pinDist!==null ? Math.round(r.pinDist) : null, pinPlaying: r.pinPlaying!==null ? Math.round(r.pinPlaying) : null,
-      hasTargetToPin: r.hasTargetToPin, targetToPin: r.targetToPinDist!==null ? Math.round(r.targetToPinDist) : null, targetToPinPlaying: r.targetToPinPlaying!==null ? Math.round(r.targetToPinPlaying) : null,
-      showGreen: r.showGreen, green: r.green ? {front:Math.round(r.green.front), middle:Math.round(r.green.middle), back:Math.round(r.green.back)} : null
-    };
-  }
+  // ============================================================
+  // APP — INIT
+  // Orchestration only: calls into each domain's setup in order.
+  // ============================================================
 
-  // ---------------- voice-only distance selection (max 3, no green detail, no wind narration) ----------------
-  // The visible Caddie Read card still shows everything via factsFor() above — this only
-  // trims what actually gets SPOKEN, since audio is heard sequentially and needs to stay short.
-  // Priority: 1) location→target  2) location→pin (dropped if target is set AND pin > 300y)
-  // 3) one wind-adjusted "plays" number for whichever of target/pin is primary, only if the
-  // adjustment is actually meaningful. Never more than 3 items; never green front/mid/back;
-  // never a spoken wind description.
-  function buildVoiceDistances(f){
-    const list = [];
-    if(f.hasTarget) list.push({ type:'target', value:f.target });
-    const pinExcluded = f.hasTarget && f.pin !== null && f.pin > 300;
-    if(f.hasPin && !pinExcluded) list.push({ type:'pin', value:f.pin });
-    if(list.length < 3 && f.showsPlaying){
-      if(f.hasTarget) list.push({ type:'plays', value:f.targetPlaying });
-      else if(f.hasPin && !pinExcluded) list.push({ type:'plays', value:f.pinPlaying });
-    }
-    return list.slice(0,3);
-  }
-
-  const PERSONAS = [
-    {
-      name:'Big Country', tag:'Relaxed Southern golf personality.', rate:0.88, pitch:0.85, gender:'male',
-      intros: makeRotator(["Alright partner,", "Well now,", "Here we go,", "Listen here,", "Alright, alright,", "Okay now,"]),
-      outros: makeRotator(["Go get her.", "That's the play, partner.", "Now go on and hit it.", "Let's see it.", "Go on now.", "There you go."]),
-      speak(f){
-        const parts = [];
-        if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}, partner.`);
-        else if(!f.hasClubs) parts.push(`Get your clubs into Options and I'll give you a number.`);
-        if(f.tip) parts.push(f.tip);
-        (f.voiceDistances||[]).forEach(d => {
-          if(d.type==='target') parts.push(`She's playin' about ${d.value} to your spot.`);
-          else if(d.type==='pin') parts.push(`${d.value} to the flag.`);
-          else if(d.type==='plays') parts.push(`Plays about ${d.value}.`);
-        });
-        return parts.join(' ');
-      }
-    },
-    {
-      name:'Influencer', tag:'Playful, confident, cheeky — kept tasteful.', rate:1.0, pitch:1.2, gender:'female',
-      intros: makeRotator(["Okay babe,", "Alright hun,", "Here's the deal,", "Listen up,", "Okay, okay,", "Check it out,"]),
-      outros: makeRotator(["Go show 'em how it's done.", "Now go get it, tiger.", "You've got this.", "Go make it happen.", "Let's see that swing.", "Impress me."]),
-      speak(f){
-        const parts = [];
-        if(f.hasClubs && f.club) parts.push(`Go with the ${f.club}.`);
-        else if(!f.hasClubs) parts.push(`Add your clubs in Options so I can actually help you.`);
-        if(f.tip) parts.push(f.tip);
-        (f.voiceDistances||[]).forEach(d => {
-          if(d.type==='target') parts.push(`${d.value} to your spot.`);
-          else if(d.type==='pin') parts.push(`${d.value} to the pin.`);
-          else if(d.type==='plays') parts.push(`Playing ${d.value}.`);
-        });
-        return parts.join(' ');
-      }
-    },
-    {
-      name:'Broadcaster', tag:'Energetic, dramatic play-by-play.', rate:1.2, pitch:1.05, gender:'male',
-      intros: makeRotator(["And here we go —", "Big moment here —", "Folks, this is the shot —", "Here's the situation —", "All eyes on this one —", "Here we are —"]),
-      outros: makeRotator(["Let's go!", "This could be the shot of the day!", "Here we go, folks!", "Let's see what he's got!", "This is the moment!", "Unbelievable opportunity here!"]),
-      speak(f){
-        const parts = [];
-        (f.voiceDistances||[]).forEach(d => {
-          if(d.type==='target') parts.push(`We've got ${d.value} to the target.`);
-          else if(d.type==='pin') parts.push(`${d.value} to the pin.`);
-          else if(d.type==='plays') parts.push(`Plays ${d.value}.`);
-        });
-        if(f.hasClubs && f.club) parts.push(`Smooth ${f.club}.`);
-        else if(!f.hasClubs) parts.push(`No clubs on file — get those into Options!`);
-        if(f.tip) parts.push(f.tip);
-        return parts.join(' ');
-      }
-    },
-    {
-      name:'Party Guy', tag:'Fun, enthusiastic, guys-weekend energy.', rate:1.15, pitch:1.1, gender:'male',
-      intros: makeRotator(["Yoooo,", "Alright boys,", "Dude, check it,", "Okay okay,", "Let's gooo,", "Big dawg,"]),
-      outros: makeRotator(["Let's rip it!", "Send it!", "Let's get a beer after this one.", "Big swing energy, let's go!", "Absolute unit, let's go!", "LFG."]),
-      speak(f){
-        const parts = [];
-        if(f.hasClubs && f.club) parts.push(`Grab the ${f.club}!`);
-        else if(!f.hasClubs) parts.push(`Bro, you gotta add your clubs in Options first.`);
-        if(f.tip) parts.push(f.tip);
-        (f.voiceDistances||[]).forEach(d => {
-          if(d.type==='target') parts.push(`${d.value} to your spot!`);
-          else if(d.type==='pin') parts.push(`${d.value} to the stick!`);
-          else if(d.type==='plays') parts.push(`Plays ${d.value}!`);
-        });
-        return parts.join(' ');
-      }
-    },
-    {
-      name:'Best Friend', tag:'Relaxed, supportive — knows your game.', rate:0.98, pitch:0.98, gender:'male',
-      intros: makeRotator(["Okay so,", "Alright,", "Here's what I'm seeing,", "So,", "Alright man,", "Here's the read,"]),
-      outros: makeRotator(["You've got this.", "Trust it.", "Go make a good swing.", "You know this shot.", "Let's see it.", "You're good here."]),
-      speak(f){
-        const parts = [];
-        const distLines = (f.voiceDistances||[]).map(d => {
-          if(d.type==='target') return `${d.value} to your spot`;
-          if(d.type==='pin') return `${d.value} to the pin`;
-          return `playing ${d.value}`;
-        });
-        if(distLines.length) parts.push(distLines.join(', ') + '.');
-        if(f.hasClubs && f.club) parts.push(`I'd take the ${f.club}${f.tip?`, and `+f.tip.charAt(0).toLowerCase()+f.tip.slice(1):''}`);
-        else { if(f.tip) parts.push(f.tip); if(!f.hasClubs) parts.push(`Add your clubs in Options and I'll be able to give you a real number.`); }
-        return parts.join(' ');
-      }
-    }
-  ];
-  let selectedPersonaIdx = 0;
-
-  // ---------------- per-persona voice selection (device/browser-driven, gender-preferred) ----------------
-  // Scores every voice speechSynthesis.getVoices() actually returns on THIS device. English
-  // strongly preferred, then a gender-name-pattern match, then non-novelty/local/default as
-  // tiebreakers. No voice name is ever hard-coded, and nothing here assumes iOS/Android/desktop.
-  const MALE_NAME_HINTS = ['male','david','mark','daniel','alex','fred','tom','james','george','ryan','guy','matthew','aaron','arthur','oliver','thomas','gordon','eddy','reed','daniel','fred','rishi'];
-  const FEMALE_NAME_HINTS = ['female','samantha','victoria','karen','moira','tessa','fiona','susan','zira','hazel','catherine','emma','olivia','ava','sara','lisa','allison','joanna','salli','kimberly','kate','serena','martha','flo','nicky','veena','tessa'];
-  const NOVELTY_NAME_HINTS = ['whisper','bells','organ','bad news','bahh','bubbles','albert','jester','trinoids','zarvox','wobble','deranged','cellos','pipe','superstar','junior','grandma','grandpa','good news','boing'];
-
-  function scoreVoiceForGender(voice, preferGender){
-    const name = (voice.name || '').toLowerCase();
-    const lang = (voice.lang || '').toLowerCase();
-    let score = 0;
-    if(lang.startsWith('en')) score += 100; else score -= 50;
-    const isMale = MALE_NAME_HINTS.some(n => name.includes(n));
-    const isFemale = FEMALE_NAME_HINTS.some(n => name.includes(n));
-    if(preferGender === 'male' && isMale) score += 40;
-    if(preferGender === 'female' && isFemale) score += 40;
-    if(preferGender === 'male' && isFemale) score -= 15;
-    if(preferGender === 'female' && isMale) score -= 15;
-    if(NOVELTY_NAME_HINTS.some(n => name.includes(n))) score -= 80;
-    if(voice.localService) score += 5;
-    if(voice.default) score += 3;
-    return score;
-  }
-
-  const resolvedVoiceCache = {}; // personaIdx -> SpeechSynthesisVoice, rebuilt if voice list changes
-  let lastVoiceListLength = -1;
-
-  function pickVoiceForPersona(personaIdx){
-    if(!('speechSynthesis' in window)) return null;
-    const voices = window.speechSynthesis.getVoices();
-    if(!voices || !voices.length) return null;
-
-    if(voices.length !== lastVoiceListLength){
-      // voice list changed since we last resolved anything (including the common case of
-      // it loading in late via onvoiceschanged) — clear cached picks so we re-score fresh.
-      Object.keys(resolvedVoiceCache).forEach(k => delete resolvedVoiceCache[k]);
-      lastVoiceListLength = voices.length;
-    }
-    if(resolvedVoiceCache[personaIdx]) return resolvedVoiceCache[personaIdx];
-
-    const persona = PERSONAS[personaIdx] || PERSONAS[0];
-    const gender = persona.gender || 'male';
-
-    // A previously-saved voice is only trusted if it still exists in THIS device's list —
-    // otherwise (new device/browser/voice pack) we fall through and re-score automatically.
-    let chosen = null;
-    try{
-      const saved = JSON.parse(window.localStorage.getItem('woodenSticksCaddie:personaVoice:' + personaIdx) || 'null');
-      if(saved && saved.name){
-        chosen = voices.find(v => v.name === saved.name && v.lang === saved.lang) || null;
-      }
-    }catch(e){}
-
-    if(!chosen){
-      const ranked = [...voices].sort((a,b) => scoreVoiceForGender(b, gender) - scoreVoiceForGender(a, gender));
-      chosen = ranked[0] || voices.find(v => v.default) || voices[0] || null;
-      if(chosen){
-        try{ window.localStorage.setItem('woodenSticksCaddie:personaVoice:' + personaIdx, JSON.stringify({ name: chosen.name, lang: chosen.lang })); }catch(e){}
-      }
-    }
-    resolvedVoiceCache[personaIdx] = chosen;
-    return chosen;
-  }
-
-  function speakForPersona(personaIdx, text){
-    if(!('speechSynthesis' in window)) return;
-    const persona = PERSONAS[personaIdx] || PERSONAS[0];
-    const utter = new SpeechSynthesisUtterance(text);
-    const voice = pickVoiceForPersona(personaIdx);
-    if(voice) utter.voice = voice;
-    utter.rate = persona.rate;
-    utter.pitch = persona.pitch;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utter);
-  }
-
-  function updatePersonaLabel(){
-    const label = document.getElementById('currentPersonaLabel');
-    const p = PERSONAS[selectedPersonaIdx] || PERSONAS[0];
-    if(label) label.textContent = `Caddie: ${p.name}`;
-  }
-
-  function loadVoices(){
-    const sel = document.getElementById('personaSelect');
-    if(!sel) return;
-    sel.innerHTML = PERSONAS.map((p,i)=>`<option value="${i}">${p.name}</option>`).join('');
-    sel.value = String(selectedPersonaIdx);
-    sel.addEventListener('change', async () => {
-      selectedPersonaIdx = parseInt(sel.value,10);
-      updatePersonaDesc();
-      updatePersonaLabel();
-      try{ await storageAPI.set('app:personaIndex', String(selectedPersonaIdx)); }catch(e){}
-      // Preview the persona's actual voice using an existing short phrase already in the
-      // code (the wind-compass club-change line) — no new phrase invented, no separate
-      // "Test Voice" control.
-      speakForPersona(selectedPersonaIdx, 'Take one more club');
-    });
-    updatePersonaDesc();
-  }
-  function updatePersonaDesc(){
-    const desc = document.getElementById('personaDesc');
-    if(!desc) return;
-    const p = PERSONAS[selectedPersonaIdx];
-    if(desc) desc.textContent = `${p ? p.tag : ''} Fictional character, not a real person. Each personality automatically uses the best-matching voice available on this device.`;
-  }
-  if('speechSynthesis' in window){ window.speechSynthesis.onvoiceschanged = updatePersonaDesc; }
-
-  function updateCaddieRead(forceWindFetch){
-    (async () => {
-      await loadClubs();
-      await fetchWindIfDue(forceWindFetch);
-      const r = buildCaddieRead();
-      const body = document.getElementById('caddieReadBody');
-      if(!body) return;
-
-      const f = factsFor(r);
-      let html = '';
-
-      html += `<div class="caddie-club-row">`;
-      html += `<div>`;
-      if(f.hasPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.pin}y</span> to pin${f.showsPlaying?` — plays <span class="num-strong">${f.pinPlaying}y</span>`:''}</div>`;
-      if(f.hasTarget) html += `<div class="caddie-line-raw"><span class="num-strong">${f.target}y</span> to target${f.showsPlaying?` — plays <span class="num-strong">${f.targetPlaying}y</span>`:''}</div>`;
-      if(f.hasTargetToPin) html += `<div class="caddie-line-raw"><span class="num-strong">${f.targetToPin}y</span> target to pin${f.showsPlaying?` — plays <span class="num-strong">${f.targetToPinPlaying}y</span>`:''}</div>`;
-      if(!f.hasPin && !f.hasTarget) html += `<div class="caddie-line-raw">On the tee</div>`;
-      html += `</div>`;
-      html += f.club ? `<div class="caddie-club">${f.club}</div>` : '';
-      html += `</div>`;
-
-      if(f.tip) html += `<div class="caddie-note">${f.tip}</div>`;
-      if(!f.hasClubs) html += `<div class="map-caption" style="margin-top:6px;">Add your clubs in Options for a club call.</div>`;
-      if(f.windLine) html += `<div class="map-caption" style="margin-top:6px;">Wind: ${f.windLine}</div>`;
-
-      if(f.showGreen){
-        html += `<div class="map-caption" style="margin-top:10px; border-top:1px dashed rgba(35,41,30,.14); padding-top:8px; font-weight:var(--fw-medium);">Green distance</div>`;
-        html += `<div class="fmb-row"><span>Front</span><b>${f.green.front}y</b></div>`;
-        html += `<div class="fmb-row"><span>Middle</span><b>${f.green.middle}y</b></div>`;
-        html += `<div class="fmb-row"><span>Back</span><b>${f.green.back}y</b></div>`;
-      }
-      body.innerHTML = html;
-    })();
-  }
-
-  document.getElementById('readSummaryBtn').addEventListener('click', async () => {
-    const btn = document.getElementById('readSummaryBtn');
-    if(!('speechSynthesis' in window)){ alert('Text-to-speech is not supported on this device/browser.'); return; }
-    btn.disabled = true; btn.textContent = 'Preparing…';
-    try{
-      await loadClubs();
-      await fetchWindIfDue(false);
-      const r = buildCaddieRead();
-      updateCaddieRead(false);
-
-      const idx = selectedPersonaIdx;
-      const persona = PERSONAS[idx] || PERSONAS[0];
-      const f = factsFor(r);
-      f.voiceDistances = buildVoiceDistances(f); // capped/filtered set, used only for what's spoken
-      const text = `${persona.intros()} ${persona.speak(f)} ${persona.outros()}`;
-
-      // Each persona speaks in its own device-matched voice (gender-preferred, scored from
-      // whatever speechSynthesis.getVoices() actually returns on this device) at that
-      // persona's own rate/pitch. No persona's voice or rate/pitch controls another's.
-      speakForPersona(idx, text);
-    }catch(e){
-      alert('Could not read summary: ' + e.message);
-    }finally{
-      btn.disabled = false; btn.textContent = 'Give me the read';
-    }
-  });
 
   // ---------------- init ----------------
   (async function init(){
@@ -2194,6 +2328,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try{ const res = await storageAPI.get('app:personaIndex'); if(res && res.value) selectedPersonaIdx = parseInt(res.value,10) || 0; }catch(e){}
     try{ const res = await storageAPI.get('ui:collapsed'); if(res && res.value) collapsedState = JSON.parse(res.value); }catch(e){}
     try{ const res = await storageAPI.get('app:currentHole'); if(res && res.value){ const idx = parseInt(res.value,10); if(idx>=0 && idx<HOLES.length) currentHoleIndex = idx; } }catch(e){}
+    try{ const res = await storageAPI.get('app:showPin'); if(res && res.value) showPin = res.value === '1'; }catch(e){}
+    try{ const res = await storageAPI.get('app:showTarget'); if(res && res.value) showTarget = res.value === '1'; }catch(e){}
+    try{ const res = await storageAPI.get('app:showMyLocation'); if(res && res.value) showMyLocation = res.value === '1'; }catch(e){}
+    const showPinSw = document.getElementById('showPinSwitch'); if(showPinSw) showPinSw.checked = showPin;
+    const showTargetSw = document.getElementById('showTargetSwitch'); if(showTargetSw) showTargetSw.checked = showTarget;
+    const showMeSw = document.getElementById('showMeSwitch'); if(showMeSw) showMeSw.checked = showMyLocation;
 
     applyCollapsedState();
     wireCollapsibles();

@@ -96,6 +96,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .mode-btn.active{ background:var(--flag); color:#fff; border-color:var(--flag); font-weight:var(--fw-semibold); }
   .mode-btn.active[data-mode="target"]{ background:var(--wood); border-color:var(--wood); }
   .mode-btn.active[data-mode="me"]{ background:var(--slope); border-color:var(--slope); }
+  .mode-btn.is-off{ opacity:.4; } /* dims whatever color is already applied — on/off at a glance, no change to .active's own meaning */
   #golfMap{ height:455px; border-radius:10px; overflow:hidden; border:1px solid rgba(35,41,30,.15); position:relative; z-index:1; }
   .divicon-marker{ filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
   .divicon-user{ width:14px; height:14px; border-radius:50%; background:#6E8E88; border:2px solid #fff; box-shadow:0 0 0 4px rgba(110,142,136,.3); }
@@ -256,21 +257,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <div id="golfMap"></div>
         <div class="map-caption" id="locHint" style="margin-top:8px;">Turn on "Use my location" in Options to get live distances here.</div>
-
-        <div style="margin-top:10px;">
-          <div class="switch-row">
-            <label class="switch-label" for="showPinSwitch">Show Pin</label>
-            <label class="pill-switch"><input type="checkbox" id="showPinSwitch" checked><span class="pill-slider"></span></label>
-          </div>
-          <div class="switch-row">
-            <label class="switch-label" for="showTargetSwitch">Show Target</label>
-            <label class="pill-switch"><input type="checkbox" id="showTargetSwitch" checked><span class="pill-slider"></span></label>
-          </div>
-          <div class="switch-row">
-            <label class="switch-label" for="showMeSwitch">Show My Location</label>
-            <label class="pill-switch"><input type="checkbox" id="showMeSwitch" checked><span class="pill-slider"></span></label>
-          </div>
-        </div>
 
         <button class="details-toggle" type="button" data-details="pintarget">Details</button>
         <div class="details-panel" id="pintarget-details-panel" style="display:none;">Choose "Pin" or "Target" above, then tap the map where you want it — pan/zoom first to find the actual green, since this is satellite imagery, not a pre-marked hole. Both spots are saved so you can adjust them through the round. With "Use my location" on in Options, your position comes from GPS automatically. Turn it off to plan a hole before you arrive — a "My Location" option appears above so you can drop yourself anywhere on the map and get the same distances and club recommendation you'd get on the course. Your recommended club and playing numbers show up in Caddie Read above — set your Target for the shot you're about to hit, and it'll update automatically. Use the switches below to show or hide each icon on the map — hiding one doesn't remove its saved location, just its icon.</div>
@@ -1182,27 +1168,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   }
 
-  function wireVisibilitySwitches(){
-    const pinSw = document.getElementById('showPinSwitch');
-    const targetSw = document.getElementById('showTargetSwitch');
-    const meSw = document.getElementById('showMeSwitch');
-    if(pinSw) pinSw.addEventListener('change', async () => {
-      showPin = pinSw.checked;
-      applyMarkerVisibility();
-      try{ await storageAPI.set('app:showPin', showPin ? '1' : '0'); }catch(e){}
-    });
-    if(targetSw) targetSw.addEventListener('change', async () => {
-      showTarget = targetSw.checked;
-      applyMarkerVisibility();
-      try{ await storageAPI.set('app:showTarget', showTarget ? '1' : '0'); }catch(e){}
-    });
-    if(meSw) meSw.addEventListener('change', async () => {
-      showMyLocation = meSw.checked;
-      applyMarkerVisibility();
-      try{ await storageAPI.set('app:showMyLocation', showMyLocation ? '1' : '0'); }catch(e){}
-    });
-  }
-
   // Single source of truth for map viewport: whatever points are currently VISIBLE are the
   // desired view — a hidden point doesn't pull the viewport toward it. No hard-coded default
   // is used once any visible point exists.
@@ -1229,8 +1194,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       maxZoom: 21,
       attribution: 'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'
     }).addTo(golfMap);
-
-    wireVisibilitySwitches();
 
     golfMap.on('click', async (e) => {
       if(placeMode === 'pin'){
@@ -1290,11 +1253,35 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
   }
 
+  // Reflects current visibility (showPin/showTarget/showMyLocation) as a dimmed "off" look
+  // on the pill itself — independent of .active, which still only means "current placement
+  // mode" and is untouched by this.
+  function applyModeBtnOffStates(){
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      const mode = b.dataset.mode;
+      const isOn = mode==='pin' ? showPin : mode==='target' ? showTarget : showMyLocation;
+      b.classList.toggle('is-off', !isOn);
+    });
+  }
+
   document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       if(btn.dataset.mode === 'me' && locationEnabled) return; // GPS is driving position, manual mode not available
-      placeMode = btn.dataset.mode;
+      placeMode = btn.dataset.mode; // existing activation behavior — unchanged
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b===btn));
+
+      // Every click also flips that pill's own marker visibility — same state and the same
+      // applyMarkerVisibility() function used everywhere else, nothing duplicated.
+      let storageKey = null;
+      if(btn.dataset.mode === 'pin'){ showPin = !showPin; storageKey = 'app:showPin'; }
+      else if(btn.dataset.mode === 'target'){ showTarget = !showTarget; storageKey = 'app:showTarget'; }
+      else if(btn.dataset.mode === 'me'){ showMyLocation = !showMyLocation; storageKey = 'app:showMyLocation'; }
+      applyMarkerVisibility();
+      applyModeBtnOffStates();
+      if(storageKey){
+        const val = btn.dataset.mode==='pin' ? showPin : btn.dataset.mode==='target' ? showTarget : showMyLocation;
+        try{ await storageAPI.set(storageKey, val ? '1' : '0'); }catch(e){}
+      }
     });
   });
 
@@ -2331,9 +2318,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     try{ const res = await storageAPI.get('app:showPin'); if(res && res.value) showPin = res.value === '1'; }catch(e){}
     try{ const res = await storageAPI.get('app:showTarget'); if(res && res.value) showTarget = res.value === '1'; }catch(e){}
     try{ const res = await storageAPI.get('app:showMyLocation'); if(res && res.value) showMyLocation = res.value === '1'; }catch(e){}
-    const showPinSw = document.getElementById('showPinSwitch'); if(showPinSw) showPinSw.checked = showPin;
-    const showTargetSw = document.getElementById('showTargetSwitch'); if(showTargetSw) showTargetSw.checked = showTarget;
-    const showMeSw = document.getElementById('showMeSwitch'); if(showMeSw) showMeSw.checked = showMyLocation;
+    applyModeBtnOffStates();
 
     applyCollapsedState();
     wireCollapsibles();
